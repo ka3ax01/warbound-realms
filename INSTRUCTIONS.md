@@ -19,6 +19,37 @@ Prefer pragmatic solutions over abstract patterns.
 
 Do not introduce C# or plugins unless there is a clear project need.
 
+## First-Time Setup
+
+### Install Godot
+
+1. Download `Godot 4.6.x` from the official website:
+   `https://godotengine.org/download`
+2. Install the editor version for your platform.
+
+### Open The Project
+
+1. Launch Godot.
+2. Click `Import`.
+3. Select this repository folder.
+4. Choose `project.godot`.
+5. Let Godot import project assets and generate local metadata.
+
+### Run The Game
+
+1. Open the imported project.
+2. Press `F5` or use `Run Project`.
+3. The configured main scene should open automatically.
+
+### What To Check On First Launch
+
+- the main menu opens
+- campaign map opens
+- a battle scene loads
+- towers are visible and clickable
+- pause menu responds
+- victory and defeat screens still appear when conditions are met
+
 ## Core Architecture
 
 ### Autoloads
@@ -155,11 +186,13 @@ Before merging gameplay changes, verify:
 - exit from pause works
 - victory/defeat screens still respond
 
-Recommended validation:
+Recommended validation options:
 
 ```bash
-'/Users/rabbanimukhanbediya/Downloads/Godot.app/Contents/MacOS/Godot' --headless --path /Users/rabbanimukhanbediya/dev/DRT/warbound-realms --quit
+godot --headless --path . --quit
 ```
+
+If `godot` is not available in `PATH`, run the equivalent headless command for your local Godot installation.
 
 This checks scene/script loading, but it does not replace manual gameplay testing.
 
