@@ -1,0 +1,75 @@
+{
+	"id": "level_002",
+	"name": "Broken Front",
+	"difficulty": "normal",
+	"time_limit_star": 210,
+	"player_faction": "player",
+	"enemy_faction": "enemy",
+	"weather": "windy",
+	"objectives": [
+		"Push through the frontline towers.",
+		"Keep at least one player structure standing."
+	],
+	"rewards": {
+		"stars": 3,
+		"coins_reward": 125,
+		"unlock_levels": ["level_003"]
+	},
+	"structures": [
+		{
+			"id": "player_home",
+			"type": "tower",
+			"owner": "player",
+			"position": { "x": 180, "y": 360 },
+			"level": 1,
+			"garrison": 18.0,
+			"max_garrison": 100.0,
+			"generation_rate": 4.0,
+			"connected_to": ["mid_a"]
+		},
+		{
+			"id": "mid_a",
+			"type": "tower",
+			"owner": "neutral",
+			"position": { "x": 420, "y": 260 },
+			"level": 1,
+			"garrison": 14.0,
+			"max_garrison": 90.0,
+			"generation_rate": 0.0,
+			"connected_to": ["player_home", "mid_b"]
+		},
+		{
+			"id": "mid_b",
+			"type": "tower",
+			"owner": "neutral",
+			"position": { "x": 600, "y": 420 },
+			"level": 1,
+			"garrison": 16.0,
+			"max_garrison": 90.0,
+			"generation_rate": 0.0,
+			"connected_to": ["mid_a", "enemy_gate", "enemy_home"]
+		},
+		{
+			"id": "enemy_gate",
+			"type": "tower",
+			"owner": "enemy",
+			"position": { "x": 780, "y": 260 },
+			"level": 1,
+			"garrison": 18.0,
+			"max_garrison": 100.0,
+			"generation_rate": 4.0,
+			"connected_to": ["mid_b", "enemy_home"]
+		},
+		{
+			"id": "enemy_home",
+			"type": "tower",
+			"owner": "enemy",
+			"position": { "x": 940, "y": 420 },
+			"level": 2,
+			"garrison": 26.0,
+			"max_garrison": 120.0,
+			"generation_rate": 4.0,
+			"connected_to": ["mid_b", "enemy_gate"]
+		}
+	]
+}

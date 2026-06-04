@@ -1,0 +1,75 @@
+{
+	"id": "level_003",
+	"name": "Ruined Advance",
+	"difficulty": "hard",
+	"time_limit_star": 240,
+	"player_faction": "player",
+	"enemy_faction": "enemy",
+	"weather": "rain",
+	"objectives": [
+		"Capture the center ruins.",
+		"Eliminate all enemy structures."
+	],
+	"rewards": {
+		"stars": 3,
+		"coins_reward": 150,
+		"unlock_levels": ["level_004"]
+	},
+	"structures": [
+		{
+			"id": "player_home",
+			"type": "tower",
+			"owner": "player",
+			"position": { "x": 160, "y": 360 },
+			"level": 1,
+			"garrison": 20.0,
+			"max_garrison": 100.0,
+			"generation_rate": 4.0,
+			"connected_to": ["mid_top", "mid_bottom"]
+		},
+		{
+			"id": "mid_top",
+			"type": "tower",
+			"owner": "neutral",
+			"position": { "x": 420, "y": 220 },
+			"level": 1,
+			"garrison": 15.0,
+			"max_garrison": 90.0,
+			"generation_rate": 0.0,
+			"connected_to": ["player_home", "center_ruins", "enemy_home"]
+		},
+		{
+			"id": "center_ruins",
+			"type": "tower",
+			"owner": "neutral",
+			"position": { "x": 620, "y": 360 },
+			"level": 2,
+			"garrison": 22.0,
+			"max_garrison": 120.0,
+			"generation_rate": 0.0,
+			"connected_to": ["mid_top", "mid_bottom", "enemy_home"]
+		},
+		{
+			"id": "mid_bottom",
+			"type": "tower",
+			"owner": "neutral",
+			"position": { "x": 420, "y": 500 },
+			"level": 1,
+			"garrison": 15.0,
+			"max_garrison": 90.0,
+			"generation_rate": 0.0,
+			"connected_to": ["player_home", "center_ruins", "enemy_home"]
+		},
+		{
+			"id": "enemy_home",
+			"type": "tower",
+			"owner": "enemy",
+			"position": { "x": 940, "y": 360 },
+			"level": 2,
+			"garrison": 30.0,
+			"max_garrison": 130.0,
+			"generation_rate": 4.0,
+			"connected_to": ["mid_top", "center_ruins", "mid_bottom"]
+		}
+	]
+}

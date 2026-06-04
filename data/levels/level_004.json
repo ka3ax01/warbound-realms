@@ -1,0 +1,75 @@
+{
+	"id": "level_004",
+	"name": "Twin Gates",
+	"difficulty": "hard",
+	"time_limit_star": 260,
+	"player_faction": "player",
+	"enemy_faction": "enemy",
+	"weather": "fog",
+	"objectives": [
+		"Capture both outer gates.",
+		"Open the road to the final bastion."
+	],
+	"rewards": {
+		"stars": 3,
+		"coins_reward": 175,
+		"unlock_levels": ["level_005"]
+	},
+	"structures": [
+		{
+			"id": "player_home",
+			"type": "tower",
+			"owner": "player",
+			"position": { "x": 160, "y": 360 },
+			"level": 1,
+			"garrison": 22.0,
+			"max_garrison": 100.0,
+			"generation_rate": 4.0,
+			"connected_to": ["upper_gate", "lower_gate"]
+		},
+		{
+			"id": "upper_gate",
+			"type": "tower",
+			"owner": "neutral",
+			"position": { "x": 440, "y": 220 },
+			"level": 1,
+			"garrison": 18.0,
+			"max_garrison": 90.0,
+			"generation_rate": 0.0,
+			"connected_to": ["player_home", "enemy_core"]
+		},
+		{
+			"id": "lower_gate",
+			"type": "tower",
+			"owner": "neutral",
+			"position": { "x": 440, "y": 500 },
+			"level": 1,
+			"garrison": 18.0,
+			"max_garrison": 90.0,
+			"generation_rate": 0.0,
+			"connected_to": ["player_home", "enemy_core"]
+		},
+		{
+			"id": "enemy_outer",
+			"type": "tower",
+			"owner": "enemy",
+			"position": { "x": 720, "y": 360 },
+			"level": 1,
+			"garrison": 20.0,
+			"max_garrison": 100.0,
+			"generation_rate": 4.0,
+			"connected_to": ["enemy_core"]
+		},
+		{
+			"id": "enemy_core",
+			"type": "tower",
+			"owner": "enemy",
+			"position": { "x": 960, "y": 360 },
+			"level": 2,
+			"garrison": 34.0,
+			"max_garrison": 140.0,
+			"generation_rate": 4.0,
+			"connected_to": ["upper_gate", "lower_gate", "enemy_outer"]
+		}
+	]
+}

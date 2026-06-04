@@ -1,18 +1,22 @@
 extends Control
 
-var current_level_id := ""
+@onready var title_label: Label = $Panel/Content/Title
+@onready var objectives_label: Label = $Panel/Content/Objectives
+
+var current_level_id: String = ""
 
 
 func _ready() -> void:
 	visible = false
-	$Panel/VBoxContainer/StartButton.pressed.connect(_on_start_pressed)
-	$Panel/VBoxContainer/CloseButton.pressed.connect(_on_close_pressed)
+	$Panel/Content/Actions/StartButton.pressed.connect(_on_start_pressed)
+	$Panel/Content/Actions/BackButton.pressed.connect(_on_close_pressed)
 
 
 func show_level(level_data: Dictionary) -> void:
-	current_level_id = level_data.get("id", "")
-	$Panel/VBoxContainer/Title.text = level_data.get("id", "")
-	$Panel/VBoxContainer/Description.text = level_data.get("description", "")
+	current_level_id = str(level_data.get("id", ""))
+	title_label.text = str(level_data.get("name", current_level_id))
+	var objectives: Array = level_data.get("objectives", [])
+	objectives_label.text = "Objectives:\n- %s" % "\n- ".join(objectives)
 	visible = true
 
 

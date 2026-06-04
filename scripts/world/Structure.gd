@@ -1,18 +1,20 @@
 class_name Structure
 extends Node2D
 
-signal troops_requested(source: Structure, target: Structure, amount: int)
+signal structure_clicked(structure: Structure)
+signal troops_requested(source: Structure, target: Structure, amount: float)
+signal owner_changed(structure: Structure, previous_owner: String, new_owner: String)
 
-@export var structure_id := ""
-@export var owner_id := Constants.NEUTRAL_FACTION_ID
-@export var structure_type := "tower"
-@export var garrison := 10
-@export var max_garrison := 100
-@export var production_rate := 1.0
+@export var structure_id: String = ""
+@export var owner_id: String = "neutral"
+@export var garrison: float = 10.0
+@export var max_garrison: float = 100.0
+@export var generation_rate: float = 1.0
+@export var level: int = 1
 
-var neighbor_ids: Array[String] = []
+var connected_to: Array[String] = []
 var neighbors: Array[Structure] = []
-var _production_accumulator := 0.0
+var _production_accumulator: float = 0.0
 
 @onready var sprite: Sprite2D = $TowerSprite
 @onready var label: Label = $GarrisonLabel
@@ -25,7 +27,7 @@ const PLAYER_SELECTED_TEXTURE := preload("res://assets/art/structures/selected/t
 const NEUTRAL_TEXTURE := preload("res://assets/art/structures/neutral/tower_neutral.png")
 const ENEMY_TEXTURE := preload("res://assets/art/structures/enemy/tower_enemy.png")
 
-var _is_selected := false
+var _is_selected: bool = false
 
 
 func _ready() -> void:
@@ -35,61 +37,72 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if owner_id != Constants.NEUTRAL_FACTION_ID and garrison < max_garrison:
-		_production_accumulator += production_rate * delta
+	if owner_id != "neutral" and garrison < max_garrison:
+		_production_accumulator += generation_rate * delta
 		if _production_accumulator >= 1.0:
-			var produced := int(_production_accumulator)
+			var produced: float = floor(_production_accumulator)
 			_production_accumulator -= produced
 			garrison = min(max_garrison, garrison + produced)
 			_update_visuals()
 
 
 func setup_from_data(data: Dictionary) -> void:
-	structure_id = data.get("id", "")
-	position = Vector2(data.get("position", [0, 0])[0], data.get("position", [0, 0])[1])
-	owner_id = data.get("owner", Constants.NEUTRAL_FACTION_ID)
-	structure_type = data.get("type", "tower")
-	garrison = data.get("garrison", 10)
-	max_garrison = data.get("max_garrison", 100)
-	production_rate = float(data.get("production_rate", 1.0))
-	neighbor_ids.assign(data.get("neighbors", []))
+	var position_value: Variant = data.get("position", {})
+	var position_data: Dictionary = position_value if position_value is Dictionary else {}
+	var x_value: float = float(position_data.get("x", 0.0))
+	var y_value: float = float(position_data.get("y", 0.0))
+	var connected_value: Variant = data.get("connected_to", [])
+	var connected_data: Array = connected_value if connected_value is Array else []
+
+	structure_id = str(data.get("id", ""))
+	position = Vector2(x_value, y_value)
+	owner_id = _normalize_owner_id(str(data.get("owner", "neutral")))
+	garrison = float(data.get("garrison", 10.0))
+	max_garrison = float(data.get("max_garrison", 100.0))
+	generation_rate = float(data.get("generation_rate", 1.0))
+	level = int(data.get("level", 1))
+	connected_to.clear()
+	for entry in connected_data:
+		connected_to.append(str(entry))
+	_production_accumulator = 0.0
+	_update_visuals()
 
 
 func resolve_neighbors(structure_map: Dictionary) -> void:
 	neighbors.clear()
-	for neighbor_id in neighbor_ids:
+	for neighbor_id in connected_to:
 		if structure_map.has(neighbor_id):
 			neighbors.append(structure_map[neighbor_id])
 
 
 func can_send_to(target: Structure) -> bool:
-	return target != null and neighbors.has(target) and garrison > 1
+	return target != null and neighbors.has(target) and garrison >= 2.0
 
 
-func send_troops(target: Structure, send_fraction: float = Constants.DEFAULT_SEND_FRACTION) -> int:
+func send_troops(target: Structure, send_fraction: float = 0.5) -> float:
 	if not can_send_to(target):
-		return 0
-	var amount := maxi(1, int(floor(garrison * send_fraction)))
-	amount = mini(amount, garrison - 1)
-	if amount <= 0:
-		return 0
+		return 0.0
+	var amount: float = floor(garrison * send_fraction)
+	if amount < 1.0:
+		return 0.0
 	garrison -= amount
 	_update_visuals()
 	troops_requested.emit(self, target, amount)
-	EventBus.troops_sent.emit(structure_id, target.structure_id, owner_id, amount)
 	return amount
 
 
-func receive_troops(amount: int, faction_id: String) -> void:
-	if faction_id == owner_id:
-		garrison = mini(max_garrison, garrison + amount)
+func resolve_combat(attacker_owner: String, attack_power: float) -> void:
+	if attacker_owner == owner_id:
+		garrison = min(max_garrison, garrison + attack_power)
 	else:
-		garrison -= amount
-		if garrison < 0:
-			var previous_owner := owner_id
-			owner_id = faction_id
-			garrison = abs(garrison)
-			EventBus.structure_captured.emit(structure_id, previous_owner, owner_id)
+		var defense: float = garrison
+		if attack_power > defense:
+			var previous_owner: String = owner_id
+			owner_id = attacker_owner
+			garrison = attack_power - defense
+			owner_changed.emit(self, previous_owner, owner_id)
+		else:
+			garrison = defense - attack_power
 	_update_visuals()
 
 
@@ -107,19 +120,18 @@ func deselect() -> void:
 
 func _update_visuals() -> void:
 	if label:
-		label.text = "%s" % garrison
+		label.text = str(int(round(garrison)))
 	if sprite:
 		sprite.texture = _get_owner_texture()
 	if owner_glow:
 		owner_glow.modulate = _get_owner_color()
-	EventBus.structure_updated.emit(structure_id, garrison)
 
 
 func _get_owner_color() -> Color:
 	match owner_id:
-		Constants.PLAYER_FACTION_ID:
+		"player":
 			return Color("4caf50")
-		Constants.NEUTRAL_FACTION_ID:
+		"neutral":
 			return Color("9e9e9e")
 		_:
 			return Color("e53935")
@@ -127,9 +139,9 @@ func _get_owner_color() -> Color:
 
 func _get_owner_texture() -> Texture2D:
 	match owner_id:
-		Constants.PLAYER_FACTION_ID:
+		"player":
 			return PLAYER_SELECTED_TEXTURE if _is_selected else PLAYER_TEXTURE
-		Constants.NEUTRAL_FACTION_ID:
+		"neutral":
 			return NEUTRAL_TEXTURE
 		_:
 			return ENEMY_TEXTURE
@@ -137,4 +149,12 @@ func _get_owner_texture() -> Texture2D:
 
 func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		EventBus.structure_selected.emit(structure_id, owner_id)
+		structure_clicked.emit(self)
+
+
+func _normalize_owner_id(raw_owner_id: String) -> String:
+	if raw_owner_id == "player" or raw_owner_id == "neutral" or raw_owner_id == "enemy":
+		return raw_owner_id
+	if raw_owner_id.begins_with("enemy"):
+		return "enemy"
+	return raw_owner_id

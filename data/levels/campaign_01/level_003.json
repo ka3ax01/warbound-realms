@@ -12,41 +12,41 @@
 			"id": "s_player_1",
 			"position": [150, 360],
 			"owner": "player",
-			"type": "tower",
-			"garrison": 20,
-			"max_garrison": 100,
-			"production_rate": 4.0,
-			"neighbors": ["s_neutral_1", "s_neutral_2"]
+			"garrison": 20.0,
+			"max_garrison": 100.0,
+			"generation_rate": 4.0,
+			"level": 1,
+			"connected_to": ["s_neutral_1", "s_neutral_2"]
 		},
 		{
 			"id": "s_neutral_1",
 			"position": [360, 220],
 			"owner": "neutral",
-			"type": "tower",
-			"garrison": 12,
-			"max_garrison": 80,
-			"production_rate": 0.0,
-			"neighbors": ["s_player_1", "s_enemy_1"]
+			"garrison": 12.0,
+			"max_garrison": 80.0,
+			"generation_rate": 0.0,
+			"level": 1,
+			"connected_to": ["s_player_1", "s_enemy_1"]
 		},
 		{
 			"id": "s_neutral_2",
 			"position": [360, 500],
 			"owner": "neutral",
-			"type": "tower",
-			"garrison": 12,
-			"max_garrison": 80,
-			"production_rate": 0.0,
-			"neighbors": ["s_player_1", "s_enemy_1"]
+			"garrison": 12.0,
+			"max_garrison": 80.0,
+			"generation_rate": 0.0,
+			"level": 1,
+			"connected_to": ["s_player_1", "s_enemy_1"]
 		},
 		{
 			"id": "s_enemy_1",
 			"position": [760, 360],
-			"owner": "enemy_01",
-			"type": "tower",
-			"garrison": 28,
-			"max_garrison": 110,
-			"production_rate": 4.5,
-			"neighbors": ["s_neutral_1", "s_neutral_2"]
+			"owner": "enemy",
+			"garrison": 28.0,
+			"max_garrison": 110.0,
+			"generation_rate": 4.5,
+			"level": 1,
+			"connected_to": ["s_neutral_1", "s_neutral_2"]
 		}
 	],
 	"ai": {

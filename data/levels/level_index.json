@@ -1,14 +1,32 @@
 [
 	{
 		"id": "level_001",
-		"description": "Secure the crossroads and capture every tower."
+		"name": "Crossroads Clash",
+		"description": "Secure the crossroads and capture every tower.",
+		"next_level": "level_002"
 	},
 	{
 		"id": "level_002",
-		"description": "Break the enemy line before your frontier collapses."
+		"name": "Broken Front",
+		"description": "Break the enemy line before your frontier collapses.",
+		"next_level": "level_003"
 	},
 	{
 		"id": "level_003",
-		"description": "Push through neutral ground and crush the commander."
+		"name": "Ruined Advance",
+		"description": "Push through neutral ground and crush the commander.",
+		"next_level": "level_004"
+	},
+	{
+		"id": "level_004",
+		"name": "Twin Gates",
+		"description": "Split your forces and seize both roads to the enemy stronghold.",
+		"next_level": "level_005"
+	},
+	{
+		"id": "level_005",
+		"name": "Final Encirclement",
+		"description": "Surround the last fortress and finish the campaign.",
+		"next_level": ""
 	}
 ]

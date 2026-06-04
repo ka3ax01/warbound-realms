@@ -3,9 +3,10 @@ extends Node2D
 
 signal arrived(stream: TroopStream)
 
-var faction_id := ""
-var amount := 0
-var speed := 180.0
+@export var speed: float = 180.0
+
+var owner_id: String = ""
+var amount: float = 0.0
 var source: Structure
 var target: Structure
 
@@ -13,14 +14,14 @@ var target: Structure
 @onready var label: Label = $AmountLabel
 
 
-func setup(stream_source: Structure, stream_target: Structure, troop_amount: int, troop_faction_id: String) -> void:
+func setup(stream_source: Structure, stream_target: Structure, troop_amount: float, troop_owner: String) -> void:
 	source = stream_source
 	target = stream_target
 	amount = troop_amount
-	faction_id = troop_faction_id
+	owner_id = troop_owner
 	global_position = source.global_position
-	label.text = str(amount)
-	marker.color = Color("4caf50") if faction_id == Constants.PLAYER_FACTION_ID else Color("e53935")
+	label.text = str(int(round(amount)))
+	marker.color = _get_owner_color()
 
 
 func _process(delta: float) -> void:
@@ -30,6 +31,16 @@ func _process(delta: float) -> void:
 
 	global_position = global_position.move_toward(target.global_position, speed * delta)
 	if global_position.distance_to(target.global_position) <= 4.0:
-		target.receive_troops(amount, faction_id)
+		target.resolve_combat(owner_id, amount)
 		arrived.emit(self)
 		queue_free()
+
+
+func _get_owner_color() -> Color:
+	match owner_id:
+		"player":
+			return Color("4caf50")
+		"enemy":
+			return Color("e53935")
+		_:
+			return Color("9e9e9e")

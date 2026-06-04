@@ -29,28 +29,48 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+[node name="MenuColumn" type="VBoxContainer" parent="CenterContainer"]
 layout_mode = 2
+theme_override_constants/separation = 12
 
-[node name="Title" type="Label" parent="CenterContainer/VBoxContainer"]
+[node name="Title" type="Label" parent="CenterContainer/MenuColumn"]
 layout_mode = 2
 text = "Warbound Realms"
+theme_override_font_sizes/font_size = 36
 
-[node name="StartButton" type="Button" parent="CenterContainer/VBoxContainer"]
-layout_mode = 2
-text = "Start Campaign"
-
-[node name="ContinueButton" type="Button" parent="CenterContainer/VBoxContainer"]
+[node name="ContinueButton" type="Button" parent="CenterContainer/MenuColumn"]
 layout_mode = 2
 text = "Continue"
+custom_minimum_size = Vector2(260, 48)
 
-[node name="SettingsButton" type="Button" parent="CenterContainer/VBoxContainer"]
+[node name="NewGameButton" type="Button" parent="CenterContainer/MenuColumn"]
+layout_mode = 2
+text = "New Game"
+custom_minimum_size = Vector2(260, 48)
+
+[node name="SettingsButton" type="Button" parent="CenterContainer/MenuColumn"]
 layout_mode = 2
 text = "Settings"
+custom_minimum_size = Vector2(260, 48)
 
-[node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer"]
+[node name="ExitButton" type="Button" parent="CenterContainer/MenuColumn"]
 layout_mode = 2
-text = "Quit"
+text = "Exit"
+custom_minimum_size = Vector2(260, 48)
+
+[node name="VersionLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -180.0
+offset_top = -42.0
+offset_right = -24.0
+offset_bottom = -18.0
+horizontal_alignment = 2
+text = "build dev"
 
 [node name="SettingsScreen" parent="." instance=ExtResource("2")]
 layout_mode = 1
