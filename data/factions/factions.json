@@ -1,0 +1,29 @@
+[
+	{
+		"id": "player",
+		"name_key": "faction_player_name",
+		"color": "#4CAF50",
+		"structure_tint": "#81C784",
+		"troop_tint": "#C8E6C9",
+		"banner_icon": "res://assets/art/ui/factions/player_banner.png",
+		"default_music": ""
+	},
+	{
+		"id": "neutral",
+		"name_key": "faction_neutral_name",
+		"color": "#9E9E9E",
+		"structure_tint": "#BDBDBD",
+		"troop_tint": "#E0E0E0",
+		"banner_icon": "",
+		"default_music": ""
+	},
+	{
+		"id": "enemy_01",
+		"name_key": "faction_enemy_01_name",
+		"color": "#E53935",
+		"structure_tint": "#EF9A9A",
+		"troop_tint": "#FFCDD2",
+		"banner_icon": "res://assets/art/ui/factions/enemy_01_banner.png",
+		"default_music": ""
+	}
+]

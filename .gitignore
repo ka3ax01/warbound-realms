@@ -1,3 +1,27 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+
+# Export presets generated locally
+export_presets.cfg
+
+# Mono / C# build outputs, if ever enabled later
+.mono/
+bin/
+obj/
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+
+# Logs and local temp files
+*.log
+*.tmp
+
+# IDE folders
+.idea/
+.vs/
+
+# Keep workspace settings optional and local by default
+.vscode/*
+!.vscode/settings.json

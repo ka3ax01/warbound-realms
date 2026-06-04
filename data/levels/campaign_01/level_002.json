@@ -1,0 +1,50 @@
+{
+	"id": "level_002",
+	"name_key": "level_002_name",
+	"description_key": "level_002_desc",
+	"scene_type": "battlefield_desert",
+	"commander_id": "enemy_commander_01",
+	"music_track": "",
+	"victory_conditions": [{ "type": "capture_all" }],
+	"defeat_conditions": [{ "type": "lose_all_structures" }],
+	"structures": [
+		{
+			"id": "s_player_1",
+			"position": [180, 360],
+			"owner": "player",
+			"type": "tower",
+			"garrison": 18,
+			"max_garrison": 100,
+			"production_rate": 4.0,
+			"neighbors": ["s_mid_1"]
+		},
+		{
+			"id": "s_mid_1",
+			"position": [420, 360],
+			"owner": "neutral",
+			"type": "tower",
+			"garrison": 20,
+			"max_garrison": 90,
+			"production_rate": 0.0,
+			"neighbors": ["s_player_1", "s_enemy_1"]
+		},
+		{
+			"id": "s_enemy_1",
+			"position": [760, 360],
+			"owner": "enemy_01",
+			"type": "tower",
+			"garrison": 24,
+			"max_garrison": 100,
+			"production_rate": 4.5,
+			"neighbors": ["s_mid_1"]
+		}
+	],
+	"ai": {
+		"profile": "aggressive",
+		"think_interval": 1.25
+	},
+	"rewards": {
+		"unlock_levels": ["level_003"],
+		"commander_unlocked": null
+	}
+}

@@ -1,0 +1,14 @@
+[
+	{
+		"id": "level_001",
+		"description": "Secure the crossroads and capture every tower."
+	},
+	{
+		"id": "level_002",
+		"description": "Break the enemy line before your frontier collapses."
+	},
+	{
+		"id": "level_003",
+		"description": "Push through neutral ground and crush the commander."
+	}
+]
