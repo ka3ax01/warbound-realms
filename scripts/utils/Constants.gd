@@ -4,7 +4,7 @@ extends RefCounted
 const PLAYER_FACTION_ID := "player"
 const NEUTRAL_FACTION_ID := "neutral"
 
-const SAVE_FILE_PATH := "user://save_game.json"
+const SAVE_FILE_PATH := "user://savegame.json"
 const SETTINGS_FILE_PATH := "user://settings.json"
 
 const DEFAULT_SEND_FRACTION := 0.5

@@ -2,13 +2,12 @@ class_name EnemyAI
 extends Node
 
 var battle_controller: BattleController
-var think_interval := 1.5
-var _time_accumulator := 0.0
+var think_interval: float = 2.5
+var _time_accumulator: float = 0.0
 
 
-func setup(controller: BattleController, config: Dictionary) -> void:
+func setup(controller: BattleController) -> void:
 	battle_controller = controller
-	think_interval = float(config.get("think_interval", 1.5))
 
 
 func _process(delta: float) -> void:
@@ -21,18 +20,25 @@ func _process(delta: float) -> void:
 
 
 func _take_turn() -> void:
-	var owned := battle_controller.get_structures_by_owner("enemy_01")
-	var targets := battle_controller.get_attack_candidates("enemy_01")
-	if owned.is_empty() or targets.is_empty():
+	var owned: Array[Structure] = battle_controller.get_structures_by_owner("enemy")
+	if owned.is_empty():
 		return
 
-	owned.sort_custom(func(a: Structure, b: Structure): return a.garrison > b.garrison)
-	var source: Structure = owned[0]
-	if source.garrison < 8:
+	var available_sources: Array[Structure] = []
+	for structure in owned:
+		if structure.garrison > 20.0:
+			available_sources.append(structure)
+	if available_sources.is_empty():
 		return
 
-	targets.sort_custom(func(a: Structure, b: Structure): return a.garrison < b.garrison)
-	for target in targets:
-		if source.can_send_to(target):
-			battle_controller.send_ai_troops(source, target, 0.5)
-			return
+	for source in available_sources:
+		var possible_targets: Array[Structure] = []
+		for neighbor in source.neighbors:
+			if neighbor.owner_id == "neutral" or neighbor.owner_id == "player":
+				possible_targets.append(neighbor)
+		if possible_targets.is_empty():
+			continue
+
+		possible_targets.sort_custom(func(a: Structure, b: Structure) -> bool: return a.garrison < b.garrison)
+		battle_controller.send_troops(source, possible_targets[0], 0.5)
+		return

@@ -1,13 +1,20 @@
 extends Node
 
 @warning_ignore("unused_signal")
-
 signal structure_selected(structure_id: String, owner_id: String)
+@warning_ignore("unused_signal")
 signal troops_sent(source_id: String, target_id: String, faction_id: String, amount: int)
+@warning_ignore("unused_signal")
 signal structure_captured(structure_id: String, old_owner_id: String, new_owner_id: String)
-signal battle_won(level_id: String)
-signal battle_lost(level_id: String)
+@warning_ignore("unused_signal")
+signal battle_won(level_id: String, result: Dictionary)
+@warning_ignore("unused_signal")
+signal battle_lost(level_id: String, result: Dictionary)
+@warning_ignore("unused_signal")
 signal pause_changed(is_paused: bool)
+@warning_ignore("unused_signal")
 signal structure_updated(structure_id: String, garrison: int)
+@warning_ignore("unused_signal")
 signal level_loaded(level_id: String)
+@warning_ignore("unused_signal")
 signal settings_changed()

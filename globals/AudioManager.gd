@@ -14,13 +14,25 @@ func _ready() -> void:
 
 
 func _apply_settings() -> void:
-	var settings := SaveManager.get_settings()
-	var master_volume := linear_to_db(settings.get("master_volume", 1.0))
-	var music_volume := linear_to_db(settings.get("music_volume", 0.8))
-	var sfx_volume := linear_to_db(settings.get("sfx_volume", 0.8))
+	var settings: Dictionary = SaveManager.get_settings()
+	var master_volume: float = linear_to_db(float(settings.get("master_volume", 1.0)))
+	var music_volume: float = linear_to_db(float(settings.get("music_volume", 0.8)))
+	var sfx_volume: float = linear_to_db(float(settings.get("sfx_volume", 0.8)))
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), master_volume)
 	music_player.volume_db = music_volume
 	sfx_player.volume_db = sfx_volume
+
+
+func set_master_volume(value: float) -> void:
+	SaveManager.update_setting("master_volume", value)
+
+
+func set_music_volume(value: float) -> void:
+	SaveManager.update_setting("music_volume", value)
+
+
+func set_sfx_volume(value: float) -> void:
+	SaveManager.update_setting("sfx_volume", value)
 
 
 func play_music(track_path: String) -> void:

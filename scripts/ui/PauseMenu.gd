@@ -1,20 +1,22 @@
 extends Control
 
+@onready var settings_screen: Control = $SettingsScreen
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_WHEN_PAUSED
 	visible = false
 	EventBus.pause_changed.connect(_on_pause_changed)
-	$Panel/VBoxContainer/ResumeButton.pressed.connect(_on_resume_pressed)
-	$Panel/VBoxContainer/RestartButton.pressed.connect(_on_restart_pressed)
-	$Panel/VBoxContainer/SettingsButton.pressed.connect(_on_settings_pressed)
-	$Panel/VBoxContainer/ExitButton.pressed.connect(_on_exit_pressed)
+	$Panel/Content/ResumeButton.pressed.connect(_on_resume_pressed)
+	$Panel/Content/RestartButton.pressed.connect(_on_restart_pressed)
+	$Panel/Content/CampaignButton.pressed.connect(_on_exit_pressed)
+	$Panel/Content/SettingsButton.pressed.connect(_on_settings_pressed)
 
 
 func _on_pause_changed(is_paused: bool) -> void:
 	visible = is_paused
 	if not is_paused:
-		$SettingsScreen.visible = false
+		settings_screen.visible = false
 
 
 func _on_resume_pressed() -> void:
@@ -29,7 +31,7 @@ func _on_restart_pressed() -> void:
 
 
 func _on_settings_pressed() -> void:
-	$SettingsScreen.visible = true
+	settings_screen.visible = true
 
 
 func _on_exit_pressed() -> void:

@@ -26,7 +26,7 @@ offset_bottom = 140.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+[node name="Content" type="VBoxContainer" parent="Panel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -38,19 +38,75 @@ offset_bottom = -12.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Title" type="Label" parent="Panel/VBoxContainer"]
+[node name="Title" type="Label" parent="Panel/Content"]
 layout_mode = 2
 text = "Settings"
+theme_override_font_sizes/font_size = 24
 
-[node name="LanguageOption" type="OptionButton" parent="Panel/VBoxContainer"]
+[node name="MasterRow" type="HBoxContainer" parent="Panel/Content"]
 layout_mode = 2
 
-[node name="MasterVolume" type="HSlider" parent="Panel/VBoxContainer"]
+[node name="MasterLabel" type="Label" parent="Panel/Content/MasterRow"]
 layout_mode = 2
+text = "Master"
+
+[node name="MasterVolume" type="HSlider" parent="Panel/Content/MasterRow"]
+layout_mode = 2
+size_flags_horizontal = 3
 max_value = 1.0
 step = 0.05
 value = 1.0
 
-[node name="CloseButton" type="Button" parent="Panel/VBoxContainer"]
+[node name="MusicRow" type="HBoxContainer" parent="Panel/Content"]
+layout_mode = 2
+
+[node name="MusicLabel" type="Label" parent="Panel/Content/MusicRow"]
+layout_mode = 2
+text = "Music"
+
+[node name="MusicVolume" type="HSlider" parent="Panel/Content/MusicRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.05
+value = 0.8
+
+[node name="SfxRow" type="HBoxContainer" parent="Panel/Content"]
+layout_mode = 2
+
+[node name="SfxLabel" type="Label" parent="Panel/Content/SfxRow"]
+layout_mode = 2
+text = "SFX"
+
+[node name="SfxVolume" type="HSlider" parent="Panel/Content/SfxRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.05
+value = 0.8
+
+[node name="LanguageRow" type="HBoxContainer" parent="Panel/Content"]
+layout_mode = 2
+
+[node name="LanguageLabel" type="Label" parent="Panel/Content/LanguageRow"]
+layout_mode = 2
+text = "Language"
+
+[node name="LanguageOption" type="OptionButton" parent="Panel/Content/LanguageRow"]
+layout_mode = 2
+
+[node name="FullscreenToggle" type="CheckButton" parent="Panel/Content"]
+layout_mode = 2
+text = "Fullscreen"
+
+[node name="Buttons" type="HBoxContainer" parent="Panel/Content"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ResetProgressButton" type="Button" parent="Panel/Content/Buttons"]
+layout_mode = 2
+text = "Reset Progress"
+
+[node name="CloseButton" type="Button" parent="Panel/Content/Buttons"]
 layout_mode = 2
 text = "Close"
