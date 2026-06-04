@@ -1,0 +1,56 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/battle/BattleController.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/battle/EnemyAI.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/battle/ObjectiveTracker.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/battle/LevelLoader.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/battle/BattleBackground.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/battle/ConnectionRenderer.gd" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/battle/HUD.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/battle/PauseMenu.tscn" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/battle/VictoryScreen.tscn" id="9"]
+[ext_resource type="PackedScene" path="res://scenes/battle/DefeatScreen.tscn" id="10"]
+
+[node name="BattleScene" type="Node2D"]
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="Background" type="Node2D" parent="World"]
+script = ExtResource("5")
+structures_root_path = NodePath("../Structures")
+
+[node name="Connections" type="Node2D" parent="World"]
+script = ExtResource("6")
+structures_root_path = NodePath("../Structures")
+
+[node name="Structures" type="Node2D" parent="World"]
+
+[node name="TroopStreams" type="Node2D" parent="World"]
+
+[node name="VFX" type="Node2D" parent="World"]
+
+[node name="Controllers" type="Node" parent="."]
+
+[node name="BattleController" type="Node" parent="Controllers"]
+script = ExtResource("1")
+structures_root_path = NodePath("../../World/Structures")
+troop_streams_root_path = NodePath("../../World/TroopStreams")
+
+[node name="EnemyAI" type="Node" parent="Controllers/BattleController"]
+script = ExtResource("2")
+
+[node name="ObjectiveTracker" type="Node" parent="Controllers/BattleController"]
+script = ExtResource("3")
+
+[node name="LevelLoader" type="Node" parent="Controllers/BattleController"]
+script = ExtResource("4")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="HUD" parent="CanvasLayer" instance=ExtResource("7")]
+
+[node name="PauseMenu" parent="CanvasLayer" instance=ExtResource("8")]
+
+[node name="VictoryScreen" parent="CanvasLayer" instance=ExtResource("9")]
+
+[node name="DefeatScreen" parent="CanvasLayer" instance=ExtResource("10")]

@@ -1,0 +1,65 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/HUD.gd" id="1"]
+
+[node name="HUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1")
+
+[node name="TopBar" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 72.0
+grow_horizontal = 2
+theme_override_constants/separation = 20
+
+[node name="Panel" type="Panel" parent="TopBar"]
+custom_minimum_size = Vector2(780, 56)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="TopBar/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 6.0
+offset_right = -12.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="InfoRow" type="HBoxContainer" parent="TopBar/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="LevelLabel" type="Label" parent="TopBar/Panel/Margin/InfoRow"]
+layout_mode = 2
+text = "Level:"
+theme_override_font_sizes/font_size = 18
+
+[node name="SelectedLabel" type="Label" parent="TopBar/Panel/Margin/InfoRow"]
+layout_mode = 2
+text = "Selected: none"
+theme_override_font_sizes/font_size = 18
+
+[node name="HintLabel" type="Label" parent="TopBar/Panel/Margin/InfoRow"]
+layout_mode = 2
+text = "LMB: select/send"
+theme_override_font_sizes/font_size = 16
+modulate = Color(0.839216, 0.819608, 0.690196, 0.9)
+
+[node name="PauseButton" type="Button" parent="TopBar"]
+layout_mode = 2
+text = "Pause"
+custom_minimum_size = Vector2(120, 56)

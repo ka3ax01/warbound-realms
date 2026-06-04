@@ -11,8 +11,26 @@ config_version=5
 [application]
 
 config/name="WarboundRealms"
+run/main_scene="res://scenes/menu/MainMenu.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+Game="*res://globals/Game.gd"
+SaveManager="*res://globals/SaveManager.gd"
+AudioManager="*res://globals/AudioManager.gd"
+SceneLoader="*res://globals/SceneLoader.gd"
+EventBus="*res://globals/EventBus.gd"
+LocalizationManager="*res://globals/LocalizationManager.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/size/mode=4
 
 [physics]
 

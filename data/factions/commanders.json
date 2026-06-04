@@ -1,0 +1,11 @@
+[
+	{
+		"id": "enemy_commander_01",
+		"name_key": "commander_01_name",
+		"title_key": "commander_01_title",
+		"portrait": "res://assets/art/ui/commanders/commander_01.png",
+		"faction_id": "enemy_01",
+		"ai_profile": "aggressive",
+		"description_key": "commander_01_desc"
+	}
+]
