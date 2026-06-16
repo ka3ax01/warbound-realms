@@ -22,9 +22,14 @@ func show_level(level_data: Dictionary) -> void:
 
 func _on_start_pressed() -> void:
 	if current_level_id.is_empty():
+		AudioManager.play_sfx(AudioManager.ERROR_SFX)
 		return
+	AudioManager.play_sfx(AudioManager.BUTTON_SFX)
+	visible = false
 	Game.start_level(current_level_id)
 
 
 func _on_close_pressed() -> void:
+	AudioManager.play_sfx(AudioManager.BUTTON_SFX)
 	visible = false
+	current_level_id = ""

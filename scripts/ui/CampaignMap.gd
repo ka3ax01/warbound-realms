@@ -12,8 +12,10 @@ var level_index: Array = []
 
 
 func _ready() -> void:
+	AudioManager.play_menu_music()
 	back_button.pressed.connect(_on_back_pressed)
 	title_label.text = "Campaign Map"
+	popup.visible = false
 	_load_levels()
 
 
@@ -45,12 +47,15 @@ func _load_levels() -> void:
 
 
 func _on_level_pressed(level_id: String) -> void:
+	AudioManager.play_sfx(AudioManager.BUTTON_SFX)
 	var level_data: Variant = JsonUtilsScript.load_json_file("res://data/levels/%s.json" % level_id, {})
 	if level_data is Dictionary:
 		popup.show_level(level_data)
 
 
 func _on_back_pressed() -> void:
+	AudioManager.play_sfx(AudioManager.BUTTON_SFX)
+	popup.visible = false
 	SceneLoader.goto_main_menu()
 
 
