@@ -2,6 +2,9 @@ class_name LevelLoader
 extends Node
 
 const STRUCTURE_SCENE: PackedScene = preload("res://scenes/world/Structure.tscn")
+const ISO_TILE_WIDTH := 128.0
+const ISO_TILE_HEIGHT := 64.0
+const DEFAULT_VIEWPORT_SIZE := Vector2(1280.0, 720.0)
 
 var structures_by_id: Dictionary = {}
 
@@ -44,12 +47,18 @@ func load_level(level_id: String, structures_root: Node) -> Dictionary:
 		return {}
 
 	var structures_data: Array = structures_value
+	var iso_origin := _resolve_iso_origin(level_data, structures_data)
+	if not iso_origin.is_equal_approx(Vector2.ZERO) or level_data.has("iso_origin"):
+		level_data["resolved_iso_origin"] = {
+			"x": iso_origin.x,
+			"y": iso_origin.y
+		}
 	for structure_value in structures_data:
 		if structure_value is not Dictionary:
 			push_error("LevelLoader: skipped invalid structure entry in %s" % level_path)
 			continue
 
-		var structure_data: Dictionary = structure_value
+		var structure_data: Dictionary = _resolve_structure_position(structure_value, iso_origin)
 		var structure: Structure = STRUCTURE_SCENE.instantiate() as Structure
 		structures_root.add_child(structure)
 		structure.setup_from_data(structure_data)
@@ -90,3 +99,60 @@ func _validate_connections(structure: Structure, level_path: String) -> void:
 					level_path
 				]
 			)
+
+
+func _resolve_structure_position(structure_data: Dictionary, iso_origin: Vector2) -> Dictionary:
+	if not structure_data.has("iso_position"):
+		return structure_data
+	var resolved := structure_data.duplicate(true)
+	var iso_position := _parse_point(structure_data.get("iso_position"))
+	var screen_position := _iso_to_screen(iso_position, iso_origin)
+	resolved["position"] = {
+		"x": screen_position.x,
+		"y": screen_position.y
+	}
+	return resolved
+
+
+func _resolve_iso_origin(level_data: Dictionary, structures_data: Array) -> Vector2:
+	if level_data.has("iso_origin"):
+		return _parse_point(level_data.get("iso_origin"))
+
+	var has_iso_positions := false
+	var min_position := Vector2(INF, INF)
+	var max_position := Vector2(-INF, -INF)
+	for structure_data: Dictionary in structures_data:
+		if not structure_data.has("iso_position"):
+			continue
+		has_iso_positions = true
+		var iso_position := _parse_point(structure_data.get("iso_position"))
+		var raw_screen := _iso_to_screen(iso_position, Vector2.ZERO)
+		min_position.x = min(min_position.x, raw_screen.x)
+		min_position.y = min(min_position.y, raw_screen.y)
+		max_position.x = max(max_position.x, raw_screen.x)
+		max_position.y = max(max_position.y, raw_screen.y)
+
+	if not has_iso_positions:
+		return Vector2.ZERO
+
+	var content_center := (min_position + max_position) * 0.5
+	var viewport_center := DEFAULT_VIEWPORT_SIZE * 0.5
+	var origin := viewport_center - content_center
+	origin.y -= 32.0
+	return origin
+
+
+func _parse_point(value: Variant) -> Vector2:
+	if value is Dictionary:
+		var dict_value: Dictionary = value
+		return Vector2(float(dict_value.get("x", 0.0)), float(dict_value.get("y", 0.0)))
+	if value is Array and value.size() >= 2:
+		return Vector2(float(value[0]), float(value[1]))
+	return Vector2.ZERO
+
+
+func _iso_to_screen(grid_position: Vector2, origin: Vector2) -> Vector2:
+	return Vector2(
+		(grid_position.x - grid_position.y) * (ISO_TILE_WIDTH * 0.5),
+		(grid_position.x + grid_position.y) * (ISO_TILE_HEIGHT * 0.5)
+	) + origin

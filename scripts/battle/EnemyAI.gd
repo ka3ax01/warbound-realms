@@ -11,7 +11,7 @@ func setup(controller: BattleController) -> void:
 
 
 func _process(delta: float) -> void:
-	if battle_controller == null or get_tree().paused:
+	if battle_controller == null or not battle_controller.can_ai_act():
 		return
 	_time_accumulator += delta
 	if _time_accumulator >= think_interval:

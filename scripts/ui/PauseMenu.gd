@@ -2,39 +2,48 @@ extends Control
 
 @onready var settings_screen: Control = $SettingsScreen
 
+var _battle_controller: BattleController
+
+
+func setup(controller: BattleController) -> void:
+	_battle_controller = controller
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_WHEN_PAUSED
 	visible = false
 	EventBus.pause_changed.connect(_on_pause_changed)
-	$Panel/Content/ResumeButton.pressed.connect(_on_resume_pressed)
-	$Panel/Content/RestartButton.pressed.connect(_on_restart_pressed)
-	$Panel/Content/CampaignButton.pressed.connect(_on_exit_pressed)
-	$Panel/Content/SettingsButton.pressed.connect(_on_settings_pressed)
+	$CenterContainer/Panel/Margin/Content/Buttons/ResumeButton.pressed.connect(_on_resume_pressed)
+	$CenterContainer/Panel/Margin/Content/Buttons/RestartButton.pressed.connect(_on_restart_pressed)
+	$CenterContainer/Panel/Margin/Content/Buttons/CampaignButton.pressed.connect(_on_exit_pressed)
+	$CenterContainer/Panel/Margin/Content/Buttons/SettingsButton.pressed.connect(_on_settings_pressed)
 
 
 func _on_pause_changed(is_paused: bool) -> void:
-	visible = is_paused
-	if not is_paused:
+	var should_show: bool = is_paused and _battle_controller != null and _battle_controller.is_paused()
+	visible = should_show
+	if not should_show:
 		settings_screen.visible = false
 
 
 func _on_resume_pressed() -> void:
-	get_tree().paused = false
-	EventBus.pause_changed.emit(false)
+	if _battle_controller != null:
+		AudioManager.play_sfx(AudioManager.BUTTON_SFX)
+		_battle_controller.request_resume()
 
 
 func _on_restart_pressed() -> void:
-	get_tree().paused = false
-	EventBus.pause_changed.emit(false)
-	SceneLoader.goto_battle(Game.selected_level_id)
+	if _battle_controller != null:
+		AudioManager.play_sfx(AudioManager.BUTTON_SFX)
+		_battle_controller.request_restart()
 
 
 func _on_settings_pressed() -> void:
+	AudioManager.play_sfx(AudioManager.BUTTON_SFX)
 	settings_screen.visible = true
 
 
 func _on_exit_pressed() -> void:
-	get_tree().paused = false
-	EventBus.pause_changed.emit(false)
-	SceneLoader.goto_campaign()
+	if _battle_controller != null:
+		AudioManager.play_sfx(AudioManager.BUTTON_SFX)
+		_battle_controller.request_exit_to_campaign()

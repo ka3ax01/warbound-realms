@@ -1,6 +1,8 @@
 class_name ObjectiveTracker
 extends Node
 
+# TODO: rewrite for new objective/star system
+
 var battle_controller: BattleController
 var level_data: LevelData
 

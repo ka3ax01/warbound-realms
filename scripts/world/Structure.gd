@@ -15,17 +15,18 @@ signal owner_changed(structure: Structure, previous_owner: String, new_owner: St
 var connected_to: Array[String] = []
 var neighbors: Array[Structure] = []
 var _production_accumulator: float = 0.0
+var _visual_time: float = 0.0
 
 @onready var sprite: Sprite2D = $TowerSprite
 @onready var label: Label = $GarrisonLabel
+@onready var production_label: Label = $ProductionLabel
 @onready var selection_ring: Sprite2D = $SelectionRing
 @onready var owner_glow: Sprite2D = $OwnerGlow
 @onready var click_area: Area2D = $ClickArea
 
-const PLAYER_TEXTURE := preload("res://assets/art/structures/player/tower_player.png")
-const PLAYER_SELECTED_TEXTURE := preload("res://assets/art/structures/selected/tower_player_selected.png")
-const NEUTRAL_TEXTURE := preload("res://assets/art/structures/neutral/tower_neutral.png")
-const ENEMY_TEXTURE := preload("res://assets/art/structures/enemy/tower_enemy.png")
+const PLAYER_TEXTURE := preload("res://assets/art/towers/player/kenney_td_player_tower_green_01.png")
+const NEUTRAL_TEXTURE := preload("res://assets/art/towers/neutral/kenney_td_neutral_ruin_grey_01.png")
+const ENEMY_TEXTURE := preload("res://assets/art/towers/enemy/kenney_td_enemy_tower_red_01.png")
 
 var _is_selected: bool = false
 
@@ -37,6 +38,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	_visual_time += delta
 	if owner_id != "neutral" and garrison < max_garrison:
 		_production_accumulator += generation_rate * delta
 		if _production_accumulator >= 1.0:
@@ -44,18 +46,15 @@ func _process(delta: float) -> void:
 			_production_accumulator -= produced
 			garrison = min(max_garrison, garrison + produced)
 			_update_visuals()
+	_animate_visuals()
 
 
 func setup_from_data(data: Dictionary) -> void:
-	var position_value: Variant = data.get("position", {})
-	var position_data: Dictionary = position_value if position_value is Dictionary else {}
-	var x_value: float = float(position_data.get("x", 0.0))
-	var y_value: float = float(position_data.get("y", 0.0))
 	var connected_value: Variant = data.get("connected_to", [])
 	var connected_data: Array = connected_value if connected_value is Array else []
 
 	structure_id = str(data.get("id", ""))
-	position = Vector2(x_value, y_value)
+	position = _parse_position(data.get("position", {}))
 	owner_id = _normalize_owner_id(str(data.get("owner", "neutral")))
 	garrison = float(data.get("garrison", 10.0))
 	max_garrison = float(data.get("max_garrison", 100.0))
@@ -100,7 +99,11 @@ func resolve_combat(attacker_owner: String, attack_power: float) -> void:
 			var previous_owner: String = owner_id
 			owner_id = attacker_owner
 			garrison = attack_power - defense
+			_production_accumulator = 0.0
+			_is_selected = false
+			selection_ring.visible = false
 			owner_changed.emit(self, previous_owner, owner_id)
+			_pulse_capture_feedback()
 		else:
 			garrison = defense - attack_power
 	_update_visuals()
@@ -121,10 +124,13 @@ func deselect() -> void:
 func _update_visuals() -> void:
 	if label:
 		label.text = str(int(round(garrison)))
+	if production_label:
+		production_label.text = "+%s/s" % _format_generation_rate()
 	if sprite:
 		sprite.texture = _get_owner_texture()
 	if owner_glow:
 		owner_glow.modulate = _get_owner_color()
+	EventBus.structure_updated.emit(structure_id, int(round(garrison)))
 
 
 func _get_owner_color() -> Color:
@@ -140,11 +146,35 @@ func _get_owner_color() -> Color:
 func _get_owner_texture() -> Texture2D:
 	match owner_id:
 		"player":
-			return PLAYER_SELECTED_TEXTURE if _is_selected else PLAYER_TEXTURE
+			return PLAYER_TEXTURE
 		"neutral":
 			return NEUTRAL_TEXTURE
 		_:
 			return ENEMY_TEXTURE
+
+
+func _animate_visuals() -> void:
+	if owner_glow:
+		var glow_alpha: float = 0.18 + (sin(_visual_time * 2.2) + 1.0) * 0.08
+		var glow_color: Color = _get_owner_color()
+		glow_color.a = glow_alpha
+		owner_glow.modulate = glow_color
+		owner_glow.scale = Vector2.ONE * (1.28 + (sin(_visual_time * 1.6) + 1.0) * 0.04)
+	if selection_ring and selection_ring.visible:
+		var pulse: float = 1.28 + (sin(_visual_time * 5.0) + 1.0) * 0.05
+		selection_ring.scale = Vector2.ONE * pulse
+
+
+func _pulse_capture_feedback() -> void:
+	var tween: Tween = create_tween()
+	tween.tween_property(self, "scale", Vector2(1.08, 1.08), 0.12)
+	tween.tween_property(self, "scale", Vector2.ONE, 0.14)
+
+
+func _format_generation_rate() -> String:
+	if is_equal_approx(generation_rate, round(generation_rate)):
+		return str(int(round(generation_rate)))
+	return String.num(generation_rate, 1)
 
 
 func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
@@ -158,3 +188,15 @@ func _normalize_owner_id(raw_owner_id: String) -> String:
 	if raw_owner_id.begins_with("enemy"):
 		return "enemy"
 	return raw_owner_id
+
+
+func _parse_position(position_value: Variant) -> Vector2:
+	if position_value is Dictionary:
+		var position_data: Dictionary = position_value
+		return Vector2(
+			float(position_data.get("x", 0.0)),
+			float(position_data.get("y", 0.0))
+		)
+	if position_value is Array and position_value.size() >= 2:
+		return Vector2(float(position_value[0]), float(position_value[1]))
+	return Vector2.ZERO

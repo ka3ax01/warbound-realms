@@ -1,5 +1,16 @@
 extends Node
 
+const MENU_MUSIC := "res://assets/audio/music/Menu.mp3"
+const BATTLE_MUSIC := "res://assets/audio/music/Battle.mp3"
+const VICTORY_MUSIC := "res://assets/audio/music/victory.mp3"
+const DEFEAT_MUSIC := "res://assets/audio/music/defeat.mp3"
+const BUTTON_SFX := "res://assets/audio/sfx/ui/button_soft_01.ogg"
+const TOWER_SELECT_SFX := "res://assets/audio/sfx/battle/tower_selected_01.ogg"
+const SEND_TROOPS_SFX := "res://assets/audio/sfx/battle/troops_sent_01.ogg"
+const CAPTURE_SFX := "res://assets/audio/sfx/capture/tower_capture_01.ogg"
+const UPGRADE_SFX := "res://assets/audio/sfx/ui/upgrade_01.ogg"
+const ERROR_SFX := "res://assets/audio/sfx/ui/error_locked_01.ogg"
+
 var music_player: AudioStreamPlayer
 var sfx_player: AudioStreamPlayer
 
@@ -50,3 +61,19 @@ func play_sfx(sfx_path: String) -> void:
 		return
 	sfx_player.stream = load(sfx_path) as AudioStream
 	sfx_player.play()
+
+
+func play_menu_music() -> void:
+	play_music(MENU_MUSIC)
+
+
+func play_battle_music() -> void:
+	play_music(BATTLE_MUSIC)
+
+
+func play_victory_music() -> void:
+	play_music(VICTORY_MUSIC)
+
+
+func play_defeat_music() -> void:
+	play_music(DEFEAT_MUSIC)

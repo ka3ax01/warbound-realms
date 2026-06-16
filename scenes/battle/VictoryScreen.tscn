@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/VictoryScreen.gd" id="1"]
+[ext_resource type="Theme" path="res://assets/ui/themes/warbound_theme.tres" id="2"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/trophy_white_2x.png" id="3"]
 
 [node name="VictoryScreen" type="Control"]
 layout_mode = 3
@@ -10,63 +12,106 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
+theme = ExtResource("2")
 script = ExtResource("1")
 
-[node name="Panel" type="Panel" parent="."]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -170.0
-offset_top = -100.0
-offset_right = 170.0
-offset_bottom = 100.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Content" type="VBoxContainer" parent="Panel"]
+[node name="Backdrop" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 12.0
-offset_top = 12.0
-offset_right = -12.0
-offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0509804, 0.0745098, 0.0509804, 0.62)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Title" type="Label" parent="Panel/Content"]
+[node name="Panel" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(560, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 24
+
+[node name="Content" type="VBoxContainer" parent="CenterContainer/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="CenterContainer/Panel/Margin/Content"]
 layout_mode = 2
 text = "Victory"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 34
 
-[node name="Stars" type="Label" parent="Panel/Content"]
+[node name="Stars" type="Label" parent="CenterContainer/Panel/Margin/Content"]
 layout_mode = 2
 text = "Stars: 0"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
 
-[node name="Objectives" type="Label" parent="Panel/Content"]
+[node name="ObjectivesPanel" type="PanelContainer" parent="CenterContainer/Panel/Margin/Content"]
+layout_mode = 2
+
+[node name="ObjectivesMargin" type="MarginContainer" parent="CenterContainer/Panel/Margin/Content/ObjectivesPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 14
+
+[node name="ObjectivesColumn" type="VBoxContainer" parent="CenterContainer/Panel/Margin/Content/ObjectivesPanel/ObjectivesMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ObjectivesTitle" type="Label" parent="CenterContainer/Panel/Margin/Content/ObjectivesPanel/ObjectivesMargin/ObjectivesColumn"]
 layout_mode = 2
 text = "Completed Objectives"
-autowrap_mode = 3
+theme_override_font_sizes/font_size = 18
 
-[node name="Coins" type="Label" parent="Panel/Content"]
+[node name="Objectives" type="Label" parent="CenterContainer/Panel/Margin/Content/ObjectivesPanel/ObjectivesMargin/ObjectivesColumn"]
+layout_mode = 2
+text = "-"
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 16
+
+[node name="Coins" type="Label" parent="CenterContainer/Panel/Margin/Content"]
 layout_mode = 2
 text = "Coins Reward: 0"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
 
-[node name="Actions" type="HBoxContainer" parent="Panel/Content"]
+[node name="Actions" type="HBoxContainer" parent="CenterContainer/Panel/Margin/Content"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 14
+alignment = 1
 
-[node name="NextLevelButton" type="Button" parent="Panel/Content/Actions"]
+[node name="NextLevelButton" type="Button" parent="CenterContainer/Panel/Margin/Content/Actions"]
 layout_mode = 2
 text = "Next Level"
+custom_minimum_size = Vector2(156, 48)
 
-[node name="RetryButton" type="Button" parent="Panel/Content/Actions"]
+[node name="RetryButton" type="Button" parent="CenterContainer/Panel/Margin/Content/Actions"]
 layout_mode = 2
 text = "Retry"
+custom_minimum_size = Vector2(140, 48)
 
-[node name="CampaignButton" type="Button" parent="Panel/Content/Actions"]
+[node name="CampaignButton" type="Button" parent="CenterContainer/Panel/Margin/Content/Actions"]
 layout_mode = 2
 text = "Campaign Map"
+custom_minimum_size = Vector2(176, 48)
+
+[node name="Icon" type="TextureRect" parent="CenterContainer/Panel/Margin/Content"]
+layout_mode = 2
+stretch_mode = 5
+custom_minimum_size = Vector2(72, 72)
+texture = ExtResource("3")

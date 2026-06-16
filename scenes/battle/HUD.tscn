@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/HUD.gd" id="1"]
+[ext_resource type="Theme" path="res://assets/ui/themes/warbound_theme.tres" id="2"]
+[ext_resource type="Script" path="res://scripts/ui/DebugBattleOverlay.gd" id="3"]
 
 [node name="HUD" type="Control"]
 layout_mode = 3
@@ -10,34 +12,30 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme = ExtResource("2")
 script = ExtResource("1")
 
 [node name="TopBar" type="HBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_left = 16.0
-offset_top = 16.0
-offset_right = -16.0
-offset_bottom = 72.0
+offset_left = 18.0
+offset_top = 18.0
+offset_right = -18.0
+offset_bottom = 78.0
 grow_horizontal = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 12
 
-[node name="Panel" type="Panel" parent="TopBar"]
-custom_minimum_size = Vector2(780, 56)
+[node name="Panel" type="PanelContainer" parent="TopBar"]
+custom_minimum_size = Vector2(560, 60)
 layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="TopBar/Panel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 12.0
-offset_top = 6.0
-offset_right = -12.0
-offset_bottom = -6.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 10
 
 [node name="InfoRow" type="HBoxContainer" parent="TopBar/Panel/Margin"]
 layout_mode = 2
@@ -45,68 +43,139 @@ theme_override_constants/separation = 18
 
 [node name="LevelLabel" type="Label" parent="TopBar/Panel/Margin/InfoRow"]
 layout_mode = 2
-text = "Level:"
-theme_override_font_sizes/font_size = 18
+text = "Level: 1"
+theme_override_font_sizes/font_size = 17
 
 [node name="SelectedLabel" type="Label" parent="TopBar/Panel/Margin/InfoRow"]
 layout_mode = 2
 text = "Selected: none"
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 17
 
 [node name="HintLabel" type="Label" parent="TopBar/Panel/Margin/InfoRow"]
 layout_mode = 2
 text = "LMB: select/send"
+modulate = Color(0.86, 0.82, 0.72, 0.92)
 theme_override_font_sizes/font_size = 16
-modulate = Color(0.839216, 0.819608, 0.690196, 0.9)
 
 [node name="PauseButton" type="Button" parent="TopBar"]
+custom_minimum_size = Vector2(144, 60)
 layout_mode = 2
 text = "Pause"
-custom_minimum_size = Vector2(120, 56)
 
-[node name="DebugPanel" type="Panel" parent="."]
+[node name="PauseStack" type="VBoxContainer" parent="TopBar"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Status" type="Label" parent="TopBar/PauseStack"]
+layout_mode = 2
+text = "Running"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 12
+modulate = Color(0.92, 0.88, 0.77, 0.88)
+
+[node name="SelectedPanel" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(292, 0)
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -236.0
-offset_top = 88.0
-offset_right = -16.0
-offset_bottom = 208.0
+offset_left = -312.0
+offset_top = 94.0
+offset_right = -20.0
+offset_bottom = 320.0
+grow_horizontal = 0
 
-[node name="Margin" type="MarginContainer" parent="DebugPanel"]
+[node name="Margin" type="MarginContainer" parent="SelectedPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="Stack" type="VBoxContainer" parent="SelectedPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="SelectedPanel/Margin/Stack"]
+layout_mode = 2
+text = "No Tower Selected"
+theme_override_font_sizes/font_size = 22
+
+[node name="Owner" type="Label" parent="SelectedPanel/Margin/Stack"]
+layout_mode = 2
+text = "Player Towers: -"
+autowrap_mode = 3
+
+[node name="Garrison" type="Label" parent="SelectedPanel/Margin/Stack"]
+layout_mode = 2
+text = "Enemy Towers: -"
+autowrap_mode = 3
+
+[node name="Growth" type="Label" parent="SelectedPanel/Margin/Stack"]
+layout_mode = 2
+text = "Player Streams: -"
+autowrap_mode = 3
+
+[node name="Level" type="Label" parent="SelectedPanel/Margin/Stack"]
+layout_mode = 2
+text = "Enemy Streams: -"
+autowrap_mode = 3
+
+[node name="Links" type="Label" parent="SelectedPanel/Margin/Stack"]
+layout_mode = 2
+text = "Links: -"
+autowrap_mode = 3
+
+[node name="DebugBattleOverlay" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 12.0
-offset_top = 10.0
-offset_right = -12.0
-offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3")
 
-[node name="DebugColumn" type="VBoxContainer" parent="DebugPanel/Margin"]
+[node name="DebugPanel" type="PanelContainer" parent="DebugBattleOverlay"]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -312.0
+offset_top = 336.0
+offset_right = -20.0
+offset_bottom = 496.0
+grow_horizontal = 0
+
+[node name="Margin" type="MarginContainer" parent="DebugBattleOverlay/DebugPanel"]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
 
-[node name="Title" type="Label" parent="DebugPanel/Margin/DebugColumn"]
+[node name="DebugColumn" type="VBoxContainer" parent="DebugBattleOverlay/DebugPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="DebugBattleOverlay/DebugPanel/Margin/DebugColumn"]
 layout_mode = 2
 text = "Debug State"
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 18
 
-[node name="PlayerTowersLabel" type="Label" parent="DebugPanel/Margin/DebugColumn"]
+[node name="PlayerTowersLabel" type="Label" parent="DebugBattleOverlay/DebugPanel/Margin/DebugColumn"]
 layout_mode = 2
 text = "Player Towers: 0"
 
-[node name="EnemyTowersLabel" type="Label" parent="DebugPanel/Margin/DebugColumn"]
+[node name="EnemyTowersLabel" type="Label" parent="DebugBattleOverlay/DebugPanel/Margin/DebugColumn"]
 layout_mode = 2
 text = "Enemy Towers: 0"
 
-[node name="PlayerStreamsLabel" type="Label" parent="DebugPanel/Margin/DebugColumn"]
+[node name="PlayerStreamsLabel" type="Label" parent="DebugBattleOverlay/DebugPanel/Margin/DebugColumn"]
 layout_mode = 2
 text = "Player Streams: 0"
 
-[node name="EnemyStreamsLabel" type="Label" parent="DebugPanel/Margin/DebugColumn"]
+[node name="EnemyStreamsLabel" type="Label" parent="DebugBattleOverlay/DebugPanel/Margin/DebugColumn"]
 layout_mode = 2
 text = "Enemy Streams: 0"
