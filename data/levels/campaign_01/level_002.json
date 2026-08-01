@@ -14,7 +14,6 @@
 			"owner": "player",
 			"garrison": 18.0,
 			"max_garrison": 100.0,
-			"generation_rate": 4.0,
 			"level": 1,
 			"connected_to": ["s_mid_1"]
 		},
@@ -24,7 +23,6 @@
 			"owner": "neutral",
 			"garrison": 20.0,
 			"max_garrison": 90.0,
-			"generation_rate": 0.0,
 			"level": 1,
 			"connected_to": ["s_player_1", "s_enemy_1"]
 		},
@@ -34,7 +32,6 @@
 			"owner": "enemy",
 			"garrison": 24.0,
 			"max_garrison": 100.0,
-			"generation_rate": 4.5,
 			"level": 1,
 			"connected_to": ["s_mid_1"]
 		}

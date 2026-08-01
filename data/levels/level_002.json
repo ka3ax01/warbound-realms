@@ -24,7 +24,6 @@
 			"level": 1,
 			"garrison": 18.0,
 			"max_garrison": 100.0,
-			"generation_rate": 4.0,
 			"connected_to": ["mid_a"]
 		},
 		{
@@ -35,7 +34,6 @@
 			"level": 1,
 			"garrison": 14.0,
 			"max_garrison": 90.0,
-			"generation_rate": 0.0,
 			"connected_to": ["player_home", "mid_b"]
 		},
 		{
@@ -46,7 +44,6 @@
 			"level": 1,
 			"garrison": 16.0,
 			"max_garrison": 90.0,
-			"generation_rate": 0.0,
 			"connected_to": ["mid_a", "enemy_gate", "enemy_home"]
 		},
 		{
@@ -57,7 +54,6 @@
 			"level": 1,
 			"garrison": 18.0,
 			"max_garrison": 100.0,
-			"generation_rate": 4.0,
 			"connected_to": ["mid_b", "enemy_home"]
 		},
 		{
@@ -68,7 +64,6 @@
 			"level": 2,
 			"garrison": 26.0,
 			"max_garrison": 120.0,
-			"generation_rate": 4.0,
 			"connected_to": ["mid_b", "enemy_gate"]
 		}
 	]
