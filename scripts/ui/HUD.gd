@@ -88,7 +88,7 @@ func _refresh_selected_panel() -> void:
 	detail_title.text = "Selected Tower"
 	detail_owner.text = "Owner: %s" % structure.owner_id.capitalize()
 	detail_garrison.text = "Garrison: %d / %d" % [int(round(structure.garrison)), int(round(structure.max_garrison))]
-	detail_growth.text = "Generation: +%s/s" % _format_rate(structure.generation_rate)
+	detail_growth.text = "Generation: +%s/s" % _format_rate(structure.get_generation_rate())
 	detail_level.text = "Level: %d" % structure.level
 	detail_links.text = "Links: %s" % ", ".join(structure.connected_to) if not structure.connected_to.is_empty() else "Links: -"
 

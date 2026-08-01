@@ -9,7 +9,6 @@ signal owner_changed(structure: Structure, previous_owner: String, new_owner: St
 @export var owner_id: String = "neutral"
 @export var garrison: float = 10.0
 @export var max_garrison: float = 100.0
-@export var generation_rate: float = 1.0
 @export var level: int = 1
 
 var connected_to: Array[String] = []
@@ -27,6 +26,7 @@ var _visual_time: float = 0.0
 const PLAYER_TEXTURE := preload("res://assets/art/towers/player/kenney_td_player_tower_green_01.png")
 const NEUTRAL_TEXTURE := preload("res://assets/art/towers/neutral/kenney_td_neutral_ruin_grey_01.png")
 const ENEMY_TEXTURE := preload("res://assets/art/towers/enemy/kenney_td_enemy_tower_red_01.png")
+const GAME_BALANCE: Resource = preload("res://data/config/game_balance.tres")
 
 var _is_selected: bool = false
 
@@ -39,13 +39,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_visual_time += delta
-	if owner_id != "neutral" and garrison < max_garrison:
-		_production_accumulator += generation_rate * delta
-		if _production_accumulator >= 1.0:
-			var produced: float = floor(_production_accumulator)
-			_production_accumulator -= produced
-			garrison = min(max_garrison, garrison + produced)
-			_update_visuals()
+	advance_unit_generation(delta)
 	_animate_visuals()
 
 
@@ -58,7 +52,6 @@ func setup_from_data(data: Dictionary) -> void:
 	owner_id = _normalize_owner_id(str(data.get("owner", "neutral")))
 	garrison = float(data.get("garrison", 10.0))
 	max_garrison = float(data.get("max_garrison", 100.0))
-	generation_rate = float(data.get("generation_rate", 1.0))
 	level = int(data.get("level", 1))
 	connected_to.clear()
 	for entry in connected_data:
@@ -72,6 +65,35 @@ func resolve_neighbors(structure_map: Dictionary) -> void:
 	for neighbor_id in connected_to:
 		if structure_map.has(neighbor_id):
 			neighbors.append(structure_map[neighbor_id])
+
+
+func can_generate_units() -> bool:
+	return (
+		is_inside_tree()
+		and not is_queued_for_deletion()
+		and process_mode != Node.PROCESS_MODE_DISABLED
+		and owner_id != "neutral"
+		and get_generation_rate() > 0.0
+		and garrison < max_garrison
+	)
+
+
+func advance_unit_generation(delta: float) -> void:
+	if delta <= 0.0 or not can_generate_units():
+		return
+
+	_production_accumulator += get_generation_rate() * delta
+	if _production_accumulator < 1.0:
+		return
+
+	var produced: float = floor(_production_accumulator)
+	_production_accumulator -= produced
+	garrison = min(max_garrison, garrison + produced)
+	_update_visuals()
+
+
+func get_generation_rate() -> float:
+	return float(GAME_BALANCE.get("structure_generation_rate"))
 
 
 func can_send_to(target: Structure) -> bool:
@@ -172,6 +194,7 @@ func _pulse_capture_feedback() -> void:
 
 
 func _format_generation_rate() -> String:
+	var generation_rate := get_generation_rate()
 	if is_equal_approx(generation_rate, round(generation_rate)):
 		return str(int(round(generation_rate)))
 	return String.num(generation_rate, 1)
