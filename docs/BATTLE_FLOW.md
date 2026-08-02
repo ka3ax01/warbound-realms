@@ -122,8 +122,9 @@ LMB on Structure.ClickArea
       -> Structure.troops_requested(source, target, amount)
   -> BattleController._on_troops_requested(...)
       -> instantiate TroopStream.tscn under World/TroopStreams
+      -> inject BattleController.is_running guard
+      -> connect stream.finished to BattleController._on_troop_stream_finished
       -> TroopStream.setup(source, target, amount, source.owner_id)
-      -> connect stream.arrived to BattleController._on_troop_stream_arrived
   -> AudioManager SEND_TROOPS_SFX + EventBus.troops_sent(...)
 ```
 
@@ -135,12 +136,29 @@ The `send_fraction` is hardcoded as `0.5` in the current click/AI call sites. `C
 
 ### Movement
 
-On `TroopStream.setup`, the stream stores source/target/owner/amount, starts at source `global_position`, labels its amount, and colors its simple UI based on owner. In `_process(delta)` it:
+On `TroopStream.setup`, the stream stores source/target/owner/amount, starts at source `global_position`, labels its amount, and colors its simple UI based on owner. Invalid owner (including `neutral`) or non-positive amount logs an error and ends the stream in transit. In `_process(delta)` a surviving stream:
 
-1. Removes itself if target is null.
+1. Emits `finished(INVALID_TARGET)` and removes itself if target is null.
 2. Advances to target at exported `speed = 180.0` pixels/s with `move_toward`.
 3. Rotates toward the target and applies a pulse scale.
-4. If distance to current target position is <= 4 pixels, resolves combat, emits arrival, and queues itself for free.
+4. If distance to current target position is <= 4 pixels, resolves combat, emits `arrived`, then `finished(ARRIVED)`, and queues itself for free.
+
+### In-transit stream collision
+
+`DetectionArea/CollisionShape2D` is a radius-8 circle matching the 16×16 Marker, not the trail. It uses collision layer and mask `2`, which only detects other streams and remains isolated from Structure ClickArea's default layer.
+
+Both `Area2D` instances can emit `area_entered` in one physics frame. Only the stream with lower `instance_id` initiates arithmetic; `_resolving_collision` protects both participants during resolution and `_is_finished` makes repeat signals no-ops. Collision also requires the injected `BattleController.is_running()` guard to return true.
+
+```text
+Opposing DetectionArea overlap
+  -> same owner: ignore; both continue
+  -> different owner, larger amount: larger.amount -= smaller.amount
+                                    -> refresh winner AmountLabel
+                                    -> smaller.finished(DESTROYED_IN_TRANSIT)
+  -> equal amount: both finished(DESTROYED_IN_TRANSIT)
+```
+
+The winner retains its original target and proceeds normally. A destroyed stream does not emit `arrived`, cannot call `target.resolve_combat`, and is removed from `World/TroopStreams`. BattleController listens to `finished` for both arrival and destruction, then defers the normal battle-state check.
 
 ### Combat / capture
 
@@ -155,7 +173,8 @@ TroopStream reaches target
      -> Structure._update_visuals()
           -> EventBus.structure_updated(id, rounded garrison)
   -> stream.arrived(stream)
-  -> BattleController._on_troop_stream_arrived()
+  -> stream.finished(stream, ARRIVED)
+  -> BattleController._on_troop_stream_finished()
        -> deferred _check_battle_state()
 ```
 
@@ -244,6 +263,10 @@ PauseMenu Resume
 | Case | Current behavior | Coverage / limitation |
 | --- | --- | --- |
 | Stream arrives after target changed owner | Arrival compares `stream.owner_id` with target's **current** `owner_id`; it reinforces if they now match, otherwise attacks. | Explicitly handled by `resolve_combat`; this is a sensible dynamic-state rule. |
+| Opposing streams overlap | Marker-sized Area2D resolves the pair once while battle is running; larger remainder continues, equal amounts remove both. | Covered by focused headless arithmetic and physical Area2D smoke test. |
+| Allied streams overlap | Same-owner pair is ignored. | They neither block nor merge. |
+| Duplicate Area2D signals | Lower instance ID initiator plus resolving/finished flags makes repeated signal a no-op. | Covered by focused test. |
+| Neutral stream created by bad data | Setup logs an error and ends stream in transit without reaching a target. | No neutral troop combat is allowed. |
 | Several streams arrive at once | Godot processes nodes serially, so each arrival sees state produced by previous processed arrival; each schedules a deferred state check. | No explicit ordering policy or batch resolution. Exact same-frame order is scene-child processing order. |
 | Victory while streams are moving | Victory waits for both no enemy structures and no enemy streams. If achieved, tree is paused; remaining friendly streams stop too. | Prevents an enemy stream from being ignored; result freezes any remaining friendly motion. |
 | Defeat while streams are moving | Defeat waits for no player structures and no player streams. | Allows last player stream a chance to capture/reinforce before defeat. |
@@ -267,5 +290,6 @@ PauseMenu Resume
 3. `scripts/battle/BattleController.gd` — state and event boundary.
 4. The specific local owner: `Structure.gd`, `TroopStream.gd`, `EnemyAI.gd`, or `LevelLoader.gd`.
 5. `scenes/battle/BattleScene.tscn` if changing composition or exported NodePaths.
+6. `tests/TroopStreamCollisionTest.tscn` for any change to stream collision/terminal state.
 
 Update this document whenever a battle transition, state condition, input rule, stream contract, scene-tree relation, or level field changes.
