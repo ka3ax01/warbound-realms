@@ -172,8 +172,9 @@ func _on_structure_clicked(clicked: Structure) -> void:
 func _on_troops_requested(source: Structure, target: Structure, amount: float) -> void:
 	var stream: TroopStream = TROOP_STREAM_SCENE.instantiate() as TroopStream
 	troop_streams_root.add_child(stream)
+	stream.set_battle_running_guard(Callable(self, "is_running"))
+	stream.finished.connect(_on_troop_stream_finished)
 	stream.setup(source, target, amount, source.owner_id)
-	stream.arrived.connect(_on_troop_stream_arrived)
 
 
 func _on_structure_owner_changed(_structure: Structure, _previous_owner: String, _new_owner: String) -> void:
@@ -184,7 +185,7 @@ func _on_structure_owner_changed(_structure: Structure, _previous_owner: String,
 	call_deferred("_check_battle_state")
 
 
-func _on_troop_stream_arrived(_stream: TroopStream) -> void:
+func _on_troop_stream_finished(_stream: TroopStream, _reason: int) -> void:
 	call_deferred("_check_battle_state")
 
 

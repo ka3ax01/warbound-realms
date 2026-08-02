@@ -77,7 +77,7 @@ res://
 | DefeatScreen | `scenes/battle/DefeatScreen.tscn` | `scripts/ui/DefeatScreen.gd` | Показывает defeat tip, retry/campaign. | `EventBus.battle_lost`, `Game`, `SceneLoader`. |
 | DebugBattleOverlay | `scenes/battle/DebugBattleOverlay.tscn` | `scripts/ui/DebugBattleOverlay.gd` | Отдельная debug сцена, но в Battle HUD фактически используется inline-копия node tree. | Injected `BattleController`; visible только в debug build при default export. |
 | Structure | `scenes/world/Structure.tscn` | `scripts/world/Structure.gd` | Runtime-инстанс башни: визуал, input, гарнизон, производство, capture. | Инстансится `LevelLoader`; `EventBus`; собственные signals. |
-| TroopStream | `scenes/world/TroopStream.tscn` | `scripts/world/TroopStream.gd` | Runtime-инстанс движущихся войск. | Инстансится `BattleController`; source/target `Structure`. |
+| TroopStream | `scenes/world/TroopStream.tscn` | `scripts/world/TroopStream.gd` | Runtime-инстанс движущихся войск и in-transit clash. | Инстансится `BattleController`; source/target `Structure`, stream-only Area2D. |
 | CaptureEffect | `scenes/world/CaptureEffect.tscn` | — | Пустой placeholder Node2D; не инстансится. | — |
 | StructureSelectionRing | `scenes/world/StructureSelectionRing.tscn` | — | Пустой ColorRect placeholder; не используется, поскольку ring embedded в Structure. | — |
 | ConfirmPopup | `scenes/common/ConfirmPopup.tscn` | — | Generic `ConfirmationDialog`; не инстансится. | — |
@@ -169,7 +169,7 @@ Located in `scripts/battle/`. `BattleController` owns battle state, selected sou
 
 ### Troop Stream System
 
-`BattleController._on_troops_requested()` instantiates `TroopStream.tscn` in `World/TroopStreams`, calls `setup`, and listens to `arrived`. `TroopStream._process()` moves toward the target at exported `speed = 180.0`; within four pixels it calls `target.resolve_combat(owner_id, amount)`, emits `arrived`, and frees itself. Combat is resolved at destination against its *current* owner/garrison.
+`BattleController._on_troops_requested()` instantiates `TroopStream.tscn` in `World/TroopStreams`, injects its `is_running` guard, listens to `finished`, then calls `setup`. A stream owns a marker-sized `DetectionArea` on collision layer/mask `2`, isolated from Structure's default layer. Opposing streams resolve exactly once through deterministic lower-instance-id initiator plus finished/resolving guards: the larger stream loses the opponent amount and continues toward its original target; equal streams both end. Allies ignore each other. `TroopStream._process()` moves at exported `speed = 180.0`; within four pixels a surviving stream calls `target.resolve_combat(owner_id, amount)`, emits `arrived`, then `finished(ARRIVED)`. Destroyed streams emit only `finished(DESTROYED_IN_TRANSIT)` and never contact the target.
 
 ### Enemy AI System
 
@@ -275,7 +275,7 @@ Fields: exported `level_id`, root NodePaths; `selected_structure`, `level_data`,
 - `get_structures_by_owner`, `get_structure_count`, `get_structure_by_id`, `get_active_troop_stream_count` — HUD/AI read API.
 - `send_troops(source, target, send_fraction := 0.5) -> bool` — delegates subtraction/stream request to Structure; plays SFX and emits `troops_sent`.
 
-Key callbacks: `_on_structure_clicked` applies select/send rules; `_on_troops_requested` creates a stream; `_on_structure_owner_changed` emits capture and schedules check; `_on_troop_stream_arrived` schedules check; `_check_battle_state` calls Game result API. Depends on LevelLoader, EnemyAI, Structure, TroopStream, AudioManager, EventBus, Game/SceneLoader.
+Key callbacks: `_on_structure_clicked` applies select/send rules; `_on_troops_requested` creates/configures a stream; `_on_structure_owner_changed` emits capture and schedules check; `_on_troop_stream_finished` schedules a check for arrival or in-transit destruction; `_check_battle_state` calls Game result API. Depends on LevelLoader, EnemyAI, Structure, TroopStream, AudioManager, EventBus, Game/SceneLoader.
 
 ### `LevelLoader`
 
@@ -310,7 +310,7 @@ Signals: `structure_clicked(Structure)`, `troops_requested(source,target,amount)
 Path: `scripts/world/TroopStream.gd`<br>
 Responsibility: one dispatched troop batch.
 
-Fields: exported `speed = 180.0`, `owner_id`, `amount`, `source`, `target`. `setup(...)` configures visual/start state. `_process(delta)` moves, resolves target combat, emits `arrived(stream)`, then frees node. Signal `arrived` is listened to by BattleController.
+Fields: exported `speed = 180.0`, `owner_id`, `amount`, `source`, `target`; private finish/resolution guards and injected battle-running Callable. `setup(...)` validates owner (`player`/`enemy`) and configures state. `_process(delta)` moves a surviving stream and resolves target arrival. `DetectionArea.area_entered` resolves only opposing stream pairs while BattleController is running. Signals: `arrived(stream)` only for target arrival; `finished(stream, reason)` for all terminal states, listened to by BattleController.
 
 ### `EnemyAI`
 
@@ -424,6 +424,7 @@ Campaign UI -> JsonUtils -> JSON data
 | --- | --- | --- | --- |
 | Изменить отправку войск | `scripts/battle/BattleController.gd`, `scripts/world/Structure.gd` | TroopStream, HUD hint, Constants | Save/progression, LevelLoader. |
 | Изменить скорость потока | `scripts/world/TroopStream.gd` | `scenes/world/TroopStream.tscn`, BATTLE_FLOW | AI/data unless making it configurable. |
+| Изменить столкновения потоков | `scripts/world/TroopStream.gd` | TroopStream scene collision layer/mask, BattleController finish handling, focused collision test | Structure and level JSON. |
 | Изменить генерацию башен | `scripts/world/Structure.gd` | `data/config/game_balance.tres`, HUD | Per-level JSON: it must not contain `generation_rate`. |
 | Проверить генерацию башен | `tests/structure_generation_test.gd` | `tests/StructureGenerationTest.tscn`, Structure.gd | Do not require a second Timer/test framework. |
 | Изменить победу/поражение | `scripts/battle/BattleController.gd` | Game, result screens, BATTLE_FLOW | Stale ObjectiveTracker unless deliberately reactivating it. |
