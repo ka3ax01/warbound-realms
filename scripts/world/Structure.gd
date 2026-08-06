@@ -10,6 +10,7 @@ signal owner_changed(structure: Structure, previous_owner: String, new_owner: St
 @export var garrison: float = 10.0
 @export var max_garrison: float = 100.0
 @export var level: int = 1
+@export var unit_type: String = Constants.UNIT_TYPE_INFANTRY
 
 var connected_to: Array[String] = []
 var neighbors: Array[Structure] = []
@@ -53,6 +54,7 @@ func setup_from_data(data: Dictionary) -> void:
 	garrison = float(data.get("garrison", 10.0))
 	max_garrison = float(data.get("max_garrison", 100.0))
 	level = int(data.get("level", 1))
+	unit_type = _normalized_unit_type(str(data.get("unit_type", Constants.UNIT_TYPE_INFANTRY)))
 	connected_to.clear()
 	for entry in connected_data:
 		connected_to.append(str(entry))
@@ -94,6 +96,14 @@ func advance_unit_generation(delta: float) -> void:
 
 func get_generation_rate() -> float:
 	return float(GAME_BALANCE.get("structure_generation_rate"))
+
+
+func get_unit_type() -> String:
+	return unit_type
+
+
+static func is_valid_unit_type(value: String) -> bool:
+	return value == Constants.UNIT_TYPE_INFANTRY or value == Constants.UNIT_TYPE_ARCHER or value == Constants.UNIT_TYPE_CAVALRY
 
 
 func can_send_to(target: Structure) -> bool:
@@ -211,6 +221,10 @@ func _normalize_owner_id(raw_owner_id: String) -> String:
 	if raw_owner_id.begins_with("enemy"):
 		return "enemy"
 	return raw_owner_id
+
+
+func _normalized_unit_type(raw_unit_type: String) -> String:
+	return raw_unit_type if is_valid_unit_type(raw_unit_type) else Constants.UNIT_TYPE_INFANTRY
 
 
 func _parse_position(position_value: Variant) -> Vector2:

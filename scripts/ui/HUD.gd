@@ -10,6 +10,7 @@ extends Control
 @onready var detail_garrison: Label = $SelectedPanel/Margin/Stack/Garrison
 @onready var detail_growth: Label = $SelectedPanel/Margin/Stack/Growth
 @onready var detail_level: Label = $SelectedPanel/Margin/Stack/Level
+@onready var detail_unit: Label = $SelectedPanel/Margin/Stack/Unit
 @onready var detail_links: Label = $SelectedPanel/Margin/Stack/Links
 @onready var debug_overlay: Control = $DebugBattleOverlay
 
@@ -85,11 +86,12 @@ func _refresh_selected_panel() -> void:
 	if structure == null:
 		_reset_selected_panel()
 		return
-	detail_title.text = "Selected Tower"
+	detail_title.text = "Structure: %s" % structure.structure_id
 	detail_owner.text = "Owner: %s" % structure.owner_id.capitalize()
 	detail_garrison.text = "Garrison: %d / %d" % [int(round(structure.garrison)), int(round(structure.max_garrison))]
 	detail_growth.text = "Generation: +%s/s" % _format_rate(structure.get_generation_rate())
 	detail_level.text = "Level: %d" % structure.level
+	detail_unit.text = "Unit: %s" % _format_unit_type(structure.get_unit_type())
 	detail_links.text = "Links: %s" % ", ".join(structure.connected_to) if not structure.connected_to.is_empty() else "Links: -"
 
 
@@ -100,12 +102,14 @@ func _reset_selected_panel() -> void:
 		detail_garrison.text = "Enemy Towers: -"
 		detail_growth.text = "Player Streams: -"
 		detail_level.text = "Enemy Streams: -"
+		detail_unit.text = "Unit: -"
 		detail_links.text = "Links: -"
 		return
 	detail_owner.text = "Player Towers: %d" % _battle_controller.get_structure_count("player")
 	detail_garrison.text = "Enemy Towers: %d" % _battle_controller.get_structure_count("enemy")
 	detail_growth.text = "Player Streams: %d" % _battle_controller.get_active_troop_stream_count("player")
 	detail_level.text = "Enemy Streams: %d" % _battle_controller.get_active_troop_stream_count("enemy")
+	detail_unit.text = "Unit: -"
 	detail_links.text = "Links: -"
 
 
@@ -117,3 +121,7 @@ func _format_rate(value: float) -> String:
 	if is_equal_approx(value, round(value)):
 		return str(int(round(value)))
 	return String.num(value, 1)
+
+
+func _format_unit_type(value: String) -> String:
+	return value.capitalize()

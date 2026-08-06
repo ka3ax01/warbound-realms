@@ -121,6 +121,11 @@ layout_mode = 2
 text = "Enemy Streams: -"
 autowrap_mode = 3
 
+[node name="Unit" type="Label" parent="SelectedPanel/Margin/Stack"]
+layout_mode = 2
+text = "Unit: -"
+autowrap_mode = 3
+
 [node name="Links" type="Label" parent="SelectedPanel/Margin/Stack"]
 layout_mode = 2
 text = "Links: -"

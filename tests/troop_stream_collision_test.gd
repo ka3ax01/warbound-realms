@@ -15,6 +15,7 @@ func _ready() -> void:
 
 
 func _run_tests() -> void:
+	_test_stream_inherits_source_unit_type()
 	_test_player_wins_with_remainder()
 	_test_enemy_wins_with_remainder()
 	_test_equal_streams_destroy_each_other()
@@ -27,6 +28,20 @@ func _run_tests() -> void:
 	await _test_tree_pause_blocks_movement_and_collision()
 	await _test_destroyed_stream_is_removed()
 	call_deferred("_finish")
+
+
+func _test_stream_inherits_source_unit_type() -> void:
+	var player_source := _make_structure("player", Vector2(0, 0), 10.0, "archer")
+	var enemy_target := _make_structure("enemy", Vector2(100, 0), 10.0)
+	var player_stream := _make_stream("player", 5.0, player_source, enemy_target)
+	_expect_true("player stream inherits source unit type", player_stream.unit_type == "archer")
+	_expect_true("player stream displays source unit type", player_stream.unit_label.text == "ARC")
+
+	var enemy_source := _make_structure("enemy", Vector2(300, 0), 10.0, "cavalry")
+	var player_target := _make_structure("player", Vector2(400, 0), 10.0)
+	var enemy_stream := _make_stream("enemy", 5.0, enemy_source, player_target)
+	_expect_true("enemy stream inherits source unit type", enemy_stream.unit_type == "cavalry")
+	_expect_true("enemy stream displays source unit type", enemy_stream.unit_label.text == "CAV")
 
 
 func _test_player_wins_with_remainder() -> void:
@@ -173,18 +188,26 @@ func _make_stream(
 	return stream
 
 
-func _make_structure(owner_id: String, world_position: Vector2, garrison: float) -> Structure:
+func _make_structure(
+	owner_id: String,
+	world_position: Vector2,
+	garrison: float,
+	unit_type: String = ""
+) -> Structure:
 	_fixture_index += 1
 	var structure := STRUCTURE_SCENE.instantiate() as Structure
 	add_child(structure)
-	structure.setup_from_data({
+	var data := {
 		"id": "stream_test_structure_%d" % _fixture_index,
 		"owner": owner_id,
 		"position": {"x": world_position.x, "y": world_position.y},
 		"garrison": garrison,
 		"max_garrison": 100.0,
 		"connected_to": []
-	})
+	}
+	if not unit_type.is_empty():
+		data["unit_type"] = unit_type
+	structure.setup_from_data(data)
 	return structure
 
 

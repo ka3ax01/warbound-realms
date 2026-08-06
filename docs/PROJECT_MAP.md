@@ -4,7 +4,7 @@
 
 ## 1. Project Overview
 
-`Warbound Realms` — single-player prototype на Godot 4.6.x / GDScript: 2D/2.5D tower-conquest RTS для Steam-направленного MVP. Игровой цикл: структуры производят гарнизон; игрок выбирает дружественную структуру и отправляет часть гарнизона только по существующей связи; поток войск усиливает союзника либо сражается за цель и может её захватить.
+`Warbound Realms` — single-player prototype на Godot 4.6.x / GDScript: 2D/2.5D tower-conquest RTS для Steam-направленного MVP. Игровой цикл: структуры производят гарнизон; игрок выбирает дружественную структуру и отправляет часть гарнизона только по существующей связи; поток войск наследует тип исходной башни, усиливает союзника либо сражается за цель и может её захватить. Тип войск пока является только данными и визуальной идентификацией, без боевых модификаторов.
 
 Основные системы: меню и кампания, JSON-загрузка уровней, бой и capture, простой AI противника, пауза/результат боя, прогрессия и настройки в `user://`, музыка/SFX, CSV-локализация. Steam-интеграции и контроллера командиров в runtime нет.
 
@@ -165,11 +165,11 @@ Located in `scripts/battle/`. `BattleController` owns battle state, selected sou
 
 ### Structure System
 
-`scripts/world/Structure.gd` implements `Structure.tscn`. Runtime fields: `structure_id`, `owner_id`, `garrison`, `max_garrison`, `level`, `connected_to`, `neighbors`. `can_generate_units()` is the single generation rule: a live, enabled, non-neutral Structure below cap with positive balance rate can generate. `_process()` delegates to `advance_unit_generation(delta)`, which reads global `GameBalance.structure_generation_rate` from `data/config/game_balance.tres` and caps at each structure's JSON `max_garrison`; it creates no Timer. `resolve_combat` reinforces same-owner targets; otherwise it subtracts defence or flips owner with residual attack as garrison. `_update_visuals()` updates labels/textures/glow and emits `EventBus.structure_updated`.
+`scripts/world/Structure.gd` implements `Structure.tscn`. Runtime fields: `structure_id`, `owner_id`, `garrison`, `max_garrison`, `level`, `unit_type`, `connected_to`, `neighbors`. `unit_type` is read from active level JSON with a safe `infantry` fallback; valid values are `infantry`, `archer`, `cavalry`. It remains a tower property on capture and has no combat effect in Milestone 1. `can_generate_units()` is the single generation rule: a live, enabled, non-neutral Structure below cap with positive balance rate can generate. `_process()` delegates to `advance_unit_generation(delta)`, which reads global `GameBalance.structure_generation_rate` from `data/config/game_balance.tres` and caps at each structure's JSON `max_garrison`; it creates no Timer. `resolve_combat` reinforces same-owner targets; otherwise it subtracts defence or flips owner with residual attack as garrison. `_update_visuals()` updates labels/textures/glow and emits `EventBus.structure_updated`.
 
 ### Troop Stream System
 
-`BattleController._on_troops_requested()` instantiates `TroopStream.tscn` in `World/TroopStreams`, injects its `is_running` guard, listens to `finished`, then calls `setup`. A stream owns a marker-sized `DetectionArea` on collision layer/mask `2`, isolated from Structure's default layer. Opposing streams resolve exactly once through deterministic lower-instance-id initiator plus finished/resolving guards: the larger stream loses the opponent amount and continues toward its original target; equal streams both end. Allies ignore each other. `TroopStream._process()` moves at exported `speed = 180.0`; within four pixels a surviving stream calls `target.resolve_combat(owner_id, amount)`, emits `arrived`, then `finished(ARRIVED)`. Destroyed streams emit only `finished(DESTROYED_IN_TRANSIT)` and never contact the target.
+`BattleController._on_troops_requested()` instantiates `TroopStream.tscn` in `World/TroopStreams`, injects its `is_running` guard, listens to `finished`, then calls `setup`. The stream reads its `unit_type` from the source Structure and displays `INF` / `ARC` / `CAV` with a unit-specific marker color; trail/glow still identify owner. A stream owns a marker-sized `DetectionArea` on collision layer/mask `2`, isolated from Structure's default layer. Opposing streams resolve exactly once through deterministic lower-instance-id initiator plus finished/resolving guards: the larger stream loses the opponent amount and continues toward its original target; equal streams both end. Allies ignore each other. Unit type does not affect this arithmetic. `TroopStream._process()` moves at exported `speed = 180.0`; within four pixels a surviving stream calls `target.resolve_combat(owner_id, amount)`, emits `arrived`, then `finished(ARRIVED)`. Destroyed streams emit only `finished(DESTROYED_IN_TRANSIT)` and never contact the target.
 
 ### Enemy AI System
 
@@ -292,9 +292,10 @@ It also owns private position parsing/isometric centering and connection validat
 Path: `scripts/world/Structure.gd`<br>
 Responsibility: one tower's state, production, input and combat result.
 
-Important fields: `structure_id`, `owner_id`, `garrison`, `max_garrison`, `level`, `connected_to`, resolved `neighbors`; selection/production accumulators. Generation rate is queried from `GameBalance`, not stored per Structure.
+Important fields: `structure_id`, `owner_id`, `garrison`, `max_garrison`, `level`, `unit_type`, `connected_to`, resolved `neighbors`; selection/production accumulators. `unit_type` accepts `infantry`/`archer`/`cavalry`, defaults safely to infantry, and is intentionally unchanged by capture. Generation rate is queried from `GameBalance`, not stored per Structure.
 
-- `setup_from_data(data)` — applies supported JSON fields.
+- `setup_from_data(data)` — applies supported JSON fields, including backward-compatible `unit_type`.
+- `get_unit_type()` / `is_valid_unit_type(value)` — unit-type read/validation API for transit/UI.
 - `can_generate_units() -> bool` — live/enabled, non-neutral owner, positive rate, and not-at-cap generation guard.
 - `advance_unit_generation(delta)` — the sole production step called by `_process`; accumulates rate, produces whole units and caps garrison.
 - `resolve_neighbors(structure_map)` — resolves string IDs to Structure nodes.
@@ -310,7 +311,7 @@ Signals: `structure_clicked(Structure)`, `troops_requested(source,target,amount)
 Path: `scripts/world/TroopStream.gd`<br>
 Responsibility: one dispatched troop batch.
 
-Fields: exported `speed = 180.0`, `owner_id`, `amount`, `source`, `target`; private finish/resolution guards and injected battle-running Callable. `setup(...)` validates owner (`player`/`enemy`) and configures state. `_process(delta)` moves a surviving stream and resolves target arrival. `DetectionArea.area_entered` resolves only opposing stream pairs while BattleController is running. Signals: `arrived(stream)` only for target arrival; `finished(stream, reason)` for all terminal states, listened to by BattleController.
+Fields: exported `speed = 180.0`, `owner_id`, `amount`, `unit_type`, `source`, `target`; private finish/resolution guards and injected battle-running Callable. `setup(...)` validates owner (`player`/`enemy`), inherits a valid unit type from source or falls back to infantry, and configures owner/unit presentation. `_process(delta)` moves a surviving stream and resolves target arrival. `DetectionArea.area_entered` resolves only opposing stream pairs while BattleController is running. Signals: `arrived(stream)` only for target arrival; `finished(stream, reason)` for all terminal states, listened to by BattleController.
 
 ### `EnemyAI`
 
@@ -371,7 +372,7 @@ Paths: `scripts/utils/Constants.gd`, `scripts/utils/JsonUtils.gd`.<br>
 | Data file | Path | Purpose | Loaded by | Important fields |
 | --- | --- | --- | --- | --- |
 | Campaign index | `data/levels/level_index.json` | Ordered campaign listing and Next-level links. | CampaignMap, VictoryScreen. | `id`, `name`, `description`, `next_level`. |
-| Runtime levels | `data/levels/level_001.json` … `level_005.json` | Authoritative battle definitions currently used by loader. | LevelLoader; CampaignMap popup. | `id`, `name`, `difficulty`, `time_limit_star`, factions, `weather`, `objectives`, `rewards`, `structures`. |
+| Runtime levels | `data/levels/level_001.json` … `level_005.json` | Authoritative battle definitions currently used by loader. | LevelLoader; CampaignMap popup. | `id`, `name`, `difficulty`, `time_limit_star`, factions, `weather`, `objectives`, `rewards`, `structures.unit_type`. |
 | Legacy/alternate campaign levels | `data/levels/campaign_01/level_001.json` … `003.json` | Alternate, currently unreferenced definitions. | Nobody. | `name_key`, `description_key`, `scene_type`, commander, conditions, `ai`, structures/rewards. |
 | Faction catalog | `data/factions/factions.json` | Intended faction metadata. | Nobody. | `id`, `name_key`, color/tints, banner, default music. |
 | Commander catalog | `data/factions/commanders.json` | Intended commander metadata. | Nobody. | `id`, keys, portrait, `faction_id`, `ai_profile`. |
@@ -425,6 +426,7 @@ Campaign UI -> JsonUtils -> JSON data
 | Изменить отправку войск | `scripts/battle/BattleController.gd`, `scripts/world/Structure.gd` | TroopStream, HUD hint, Constants | Save/progression, LevelLoader. |
 | Изменить скорость потока | `scripts/world/TroopStream.gd` | `scenes/world/TroopStream.tscn`, BATTLE_FLOW | AI/data unless making it configurable. |
 | Изменить столкновения потоков | `scripts/world/TroopStream.gd` | TroopStream scene collision layer/mask, BattleController finish handling, focused collision test | Structure and level JSON. |
+| Изменить unit type башни/потока | `scripts/world/Structure.gd` | TroopStream, HUD, active root level JSON, DATA_MODEL | Combat formula, AI policy, factions/commanders. |
 | Изменить генерацию башен | `scripts/world/Structure.gd` | `data/config/game_balance.tres`, HUD | Per-level JSON: it must not contain `generation_rate`. |
 | Проверить генерацию башен | `tests/structure_generation_test.gd` | `tests/StructureGenerationTest.tscn`, Structure.gd | Do not require a second Timer/test framework. |
 | Изменить победу/поражение | `scripts/battle/BattleController.gd` | Game, result screens, BATTLE_FLOW | Stale ObjectiveTracker unless deliberately reactivating it. |

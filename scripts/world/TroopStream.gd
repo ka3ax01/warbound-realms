@@ -14,6 +14,7 @@ enum FinishReason {
 
 var owner_id: String = ""
 var amount: float = 0.0
+var unit_type: String = Constants.UNIT_TYPE_INFANTRY
 var source: Structure
 var target: Structure
 var _travel_time: float = 0.0
@@ -25,6 +26,7 @@ var _resolving_collision := false
 @onready var trail: ColorRect = $Trail
 @onready var marker: ColorRect = $Marker
 @onready var label: Label = $AmountLabel
+@onready var unit_label: Label = $UnitLabel
 @onready var detection_area: Area2D = $DetectionArea
 
 
@@ -37,20 +39,22 @@ func setup(stream_source: Structure, stream_target: Structure, troop_amount: flo
 	target = stream_target
 	amount = troop_amount
 	owner_id = troop_owner
+	unit_type = _get_source_unit_type(stream_source)
 	global_position = source.global_position
 	_refresh_amount_label()
 	if not _has_valid_combat_owner() or amount <= 0.0:
 		push_error("TroopStream: invalid owner '%s' or amount '%s'." % [owner_id, amount])
 		call_deferred("_finish", FinishReason.DESTROYED_IN_TRANSIT)
 		return
-	var color: Color = _get_owner_color()
-	var glow_color: Color = color
-	var trail_color: Color = color
+	var owner_color: Color = _get_owner_color()
+	var glow_color: Color = owner_color
+	var trail_color: Color = owner_color
 	glow_color.a = 0.35
 	trail_color.a = 0.25
-	marker.color = color
+	marker.color = _get_unit_color()
 	glow.color = glow_color
 	trail.color = trail_color
+	_refresh_unit_label()
 
 
 func set_battle_running_guard(guard: Callable) -> void:
@@ -148,6 +152,39 @@ func _has_valid_combat_owner() -> bool:
 func _refresh_amount_label() -> void:
 	if label != null:
 		label.text = str(int(round(amount)))
+
+
+func _refresh_unit_label() -> void:
+	if unit_label != null:
+		unit_label.text = _get_unit_short_name()
+
+
+func _get_source_unit_type(stream_source: Structure) -> String:
+	if stream_source != null and stream_source.has_method("get_unit_type"):
+		var source_unit_type := str(stream_source.call("get_unit_type"))
+		if Structure.is_valid_unit_type(source_unit_type):
+			return source_unit_type
+	return Constants.UNIT_TYPE_INFANTRY
+
+
+func _get_unit_short_name() -> String:
+	match unit_type:
+		Constants.UNIT_TYPE_ARCHER:
+			return "ARC"
+		Constants.UNIT_TYPE_CAVALRY:
+			return "CAV"
+		_:
+			return "INF"
+
+
+func _get_unit_color() -> Color:
+	match unit_type:
+		Constants.UNIT_TYPE_ARCHER:
+			return Color("d99a3d")
+		Constants.UNIT_TYPE_CAVALRY:
+			return Color("8d6bd1")
+		_:
+			return Color("d8d8d8")
 
 
 func _get_owner_color() -> Color:

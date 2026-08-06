@@ -65,7 +65,7 @@ The following is the runtime sequence after `SceneLoader.goto_battle(level_id)` 
 ### Startup contracts and non-contracts
 
 - Required functional level field: `structures`, with a unique `id` and valid `connected_to` references per entry.
-- Supported structure fields are exactly implemented by `Structure.setup_from_data`: `id`, `position`/`iso_position`, `owner`, `garrison`, `max_garrison`, `level`, `connected_to`. Generation rate is intentionally not a level field.
+- Supported structure fields are exactly implemented by `Structure.setup_from_data`: `id`, `position`/`iso_position`, `owner`, `garrison`, `max_garrison`, `level`, `unit_type`, `connected_to`. `unit_type` accepts `infantry`, `archer`, `cavalry`; missing/unknown values safely become `infantry`. Generation rate is intentionally not a level field.
 - Root runtime levels presently use Cartesian `position`; LevelLoader also supports `iso_position` but current root campaign levels do not require it.
 - `type`, `difficulty`, `weather`, `player_faction`, `enemy_faction`, `time_limit_star`, `objectives`, and `rewards` may appear in root JSON but do not change Structure construction. `rewards` is read only when victory is saved/emitted.
 - Nested `data/levels/campaign_01/*` data, its `ai`, commander and condition fields are not considered by this path.
@@ -125,6 +125,7 @@ LMB on Structure.ClickArea
       -> inject BattleController.is_running guard
       -> connect stream.finished to BattleController._on_troop_stream_finished
       -> TroopStream.setup(source, target, amount, source.owner_id)
+          -> inherits unit_type from source (fallback: infantry)
   -> AudioManager SEND_TROOPS_SFX + EventBus.troops_sent(...)
 ```
 
@@ -136,7 +137,7 @@ The `send_fraction` is hardcoded as `0.5` in the current click/AI call sites. `C
 
 ### Movement
 
-On `TroopStream.setup`, the stream stores source/target/owner/amount, starts at source `global_position`, labels its amount, and colors its simple UI based on owner. Invalid owner (including `neutral`) or non-positive amount logs an error and ends the stream in transit. In `_process(delta)` a surviving stream:
+On `TroopStream.setup`, the stream stores source/target/owner/amount and the source tower's `unit_type`, starts at source `global_position`, labels its amount, and renders `INF` / `ARC` / `CAV` with a unit-specific marker color while trail/glow retain owner color. Missing or invalid source type falls back to infantry. Invalid owner (including `neutral`) or non-positive amount logs an error and ends the stream in transit. In `_process(delta)` a surviving stream:
 
 1. Emits `finished(INVALID_TARGET)` and removes itself if target is null.
 2. Advances to target at exported `speed = 180.0` pixels/s with `move_toward`.
@@ -158,7 +159,7 @@ Opposing DetectionArea overlap
   -> equal amount: both finished(DESTROYED_IN_TRANSIT)
 ```
 
-The winner retains its original target and proceeds normally. A destroyed stream does not emit `arrived`, cannot call `target.resolve_combat`, and is removed from `World/TroopStreams`. BattleController listens to `finished` for both arrival and destruction, then defers the normal battle-state check.
+The winner retains its original target and proceeds normally. A destroyed stream does not emit `arrived`, cannot call `target.resolve_combat`, and is removed from `World/TroopStreams`. BattleController listens to `finished` for both arrival and destruction, then defers the normal battle-state check. `unit_type` has no influence on stream collision arithmetic or target combat in this milestone.
 
 ### Combat / capture
 

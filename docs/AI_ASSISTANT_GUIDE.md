@@ -20,7 +20,7 @@
 - Не добавлять hardcode, если параметр должен быть content/balance data. Но не создавать «на будущее» новую data model без того, чтобы подключить её к единственному reader.
 - Не использовать absolute scene paths для поиска gameplay node. BattleScene уже inject-ит `BattleController` в HUD/PauseMenu; предпочитать явную dependency injection или signal.
 - Не создавать вторую модель/папку данных, если уже существует canonical source. Для уровней это `data/levels/level_###.json` + `level_index.json`; для save — SaveManager v1 schema.
-- Не считать наличие JSON-поля или `.tres` доказательством его работы: проверять reader. Сейчас `GameBalance.structure_generation_rate` активен; `type`, `weather`, `time_limit_star`, alternate `ai`, faction/commander data и empty `ai_config.tres` не влияют на gameplay.
+- Не считать наличие JSON-поля или `.tres` доказательством его работы: проверять reader. Сейчас `GameBalance.structure_generation_rate` и `structures[].unit_type` активны; unit type (`infantry`/`archer`/`cavalry`) пока влияет только на HUD/визуал потока и не меняет бой. `type`, `weather`, `time_limit_star`, alternate `ai`, faction/commander data и empty `ai_config.tres` не влияют на gameplay.
 - Сохранять разделение ownership: Structure хранит локальное tower state; TroopStream отвечает за transit; BattleController — match state/result; Game — session/result facade; SaveManager — persistence; UI — presentation/navigation.
 - При изменении scene tree проверить exported relative NodePaths у BattleController, BattleBackground и ConnectionRenderer.
 - Использовать `EventBus` для широкого gameplay-to-UI notification, когда событие уже есть. Не добавлять global signal для локальной одноразовой зависимости без необходимости.
@@ -100,6 +100,14 @@ Documentation should state the implementation that exists, including deliberatel
 3. Define a single instantiation/resolution path in LevelLoader and preserve the Structure signal contract expected by BattleController.
 4. Add art/resource paths and validate a level using the new type. Do not place campaign/progression knowledge inside the structure.
 5. Document schema, loader behavior, scene map and relevant task navigation.
+
+### Change tower unit type
+
+1. Read `Structure.gd`, `TroopStream.gd`, HUD, active root level JSON, and DATA_MODEL.
+2. Keep `unit_type` as a tower property: valid values are `infantry`, `archer`, and `cavalry`; missing/unknown data must safely fall back to infantry.
+3. Preserve the existing `TroopStream.setup` boundary: player and AI orders both flow through BattleController and inherit the type from their source Structure.
+4. Do not add unit combat, collision, generation, ownership, faction, or commander modifiers without a separately scoped gameplay milestone.
+5. Run StructureGenerationTest and TroopStreamCollisionTest, then update PROJECT_MAP, BATTLE_FLOW, and DATA_MODEL.
 
 ### Add a new balance parameter
 

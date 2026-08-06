@@ -8,7 +8,7 @@
 | --- | --- | --- | --- |
 | Battle level definitions | `data/levels/level_001.json` … `level_005.json` | `LevelLoader.load_level` | `data/levels/campaign_01/*.json` has an alternate schema and is not read. |
 | Campaign ordering / next link | `data/levels/level_index.json` | CampaignMap, VictoryScreen | `rewards.unlock_levels` is not used for unlocking. |
-| Per-structure runtime state | Dictionary entry in root level JSON -> `Structure.setup_from_data` | LevelLoader / Structure | `type` is present in content but ignored by Structure. |
+| Per-structure runtime state | Dictionary entry in root level JSON -> `Structure.setup_from_data` | LevelLoader / Structure | `unit_type` is active; `type` is present in content but ignored by Structure. |
 | Progress and settings | `user://savegame.json` schema from SaveManager | SaveManager | `SaveData.gd` is a legacy/unreferenced typed schema. |
 | Audio assets | AudioManager path constants | AudioManager | Faction `default_music` is unreferenced. |
 | Localization source | `data/localization/ui.csv` | Godot translation importer / TranslationServer | Most runtime UI literals do not use translation keys. |
@@ -95,8 +95,9 @@ Each element of level `structures` becomes a `Structure.tscn` instance. The curr
   "type": "tower",
   "owner": "player",
   "position": { "x": 180, "y": 360 },
-  "level": 1,
-  "garrison": 20.0,
+	"level": 1,
+	"unit_type": "infantry",
+	"garrison": 20.0,
   "max_garrison": 100.0,
   "connected_to": ["mid_top", "mid_bottom"]
 }
@@ -110,6 +111,7 @@ Each element of level `structures` becomes a `Structure.tscn` instance. The curr
 | `position` | `Node2D.position` | Supports `{x,y}` or `[x,y]`. |
 | `iso_position` | Converted to `position` by LevelLoader | Optional alternate coordinate form; supports `{x,y}` or `[x,y]`. |
 | `level` | `level: int` | Displayed in HUD but has no current mechanical modifier. |
+| `unit_type` | `unit_type: String` | Active tower unit identity. Valid values are `infantry`, `archer`, `cavalry`; missing/unknown values safely become `infantry`. It is shown in HUD, inherited by TroopStream, and remains unchanged on capture. It has no combat, production, collision, AI-policy, faction, or commander effect in Milestone 1. |
 | `garrison` | `garrison: float` | Starting defenders/troops; display rounds to integer. |
 | `max_garrison` | `max_garrison: float` | Production and reinforcement cap. |
 | `connected_to` | `connected_to: Array[String]` -> `neighbors: Array[Structure]` | Route IDs. A source may only send to a resolved neighbor. |
@@ -128,7 +130,7 @@ For an incoming `attack_power`:
 - Otherwise if `attack_power > garrison`, owner changes and new `garrison = attack_power - old_garrison`.
 - Otherwise `garrison = old_garrison - attack_power` and owner stays.
 
-There are no faction modifiers, defence modifiers, terrain effects, level effects, or upgrading effects in this equation.
+There are no unit-type modifiers, faction modifiers, defence modifiers, terrain effects, level effects, or upgrading effects in this equation.
 
 ### Generation runtime contract
 
@@ -252,6 +254,7 @@ The requested conceptual field `unlocked_levels` is not stored in v1 save. `is_l
 ### Do not assume these authoring actions work yet
 
 - Adding `type`, `defense_modifier`, upgrade data, weather, time limit, AI profile/interval, faction modifiers or commander data does not change current runtime behavior.
+- `unit_type` is the exception: active root level structures support `infantry`, `archer`, and `cavalry` for HUD/stream identity only; it does not alter combat or AI decisions.
 - Editing `campaign_01` definitions does not change live gameplay.
 - Editing `rewards.unlock_levels` does not change `SaveManager.is_level_unlocked`.
 - Editing `.translation` output files is not the localization workflow; edit `ui.csv` instead.

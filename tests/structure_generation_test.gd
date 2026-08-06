@@ -17,6 +17,7 @@ func _ready() -> void:
 	_test_owner_changes_do_not_duplicate_generation()
 	_test_removed_or_disabled_structure_does_not_generate()
 	_test_rate_and_limit_come_from_configuration()
+	_test_unit_type_defaults_and_capture_persistence()
 	for tower: Structure in get_children():
 		tower.queue_free()
 	call_deferred("_finish")
@@ -103,16 +104,36 @@ func _test_rate_and_limit_come_from_configuration() -> void:
 	_expect_equal("max garrison comes from level data", tower.garrison, 6.0)
 
 
-func _make_tower(owner_id: String, garrison: float, max_garrison: float) -> Structure:
+func _test_unit_type_defaults_and_capture_persistence() -> void:
+	var missing_type := _make_tower("player", 10.0, 20.0)
+	_expect_true("missing unit type defaults to infantry", missing_type.get_unit_type() == "infantry")
+
+	var invalid_type := _make_tower("neutral", 1.0, 20.0, "unknown")
+	_expect_true("invalid unit type defaults to infantry", invalid_type.get_unit_type() == "infantry")
+
+	var archer_tower := _make_tower("neutral", 1.0, 20.0, "archer")
+	archer_tower.resolve_combat("player", 2.0)
+	_expect_true("capture keeps tower unit type", archer_tower.get_unit_type() == "archer")
+
+
+func _make_tower(
+	owner_id: String,
+	garrison: float,
+	max_garrison: float,
+	unit_type: String = ""
+) -> Structure:
 	var tower := STRUCTURE_SCENE.instantiate() as Structure
 	add_child(tower)
-	tower.setup_from_data({
+	var data := {
 		"id": "test_%d" % get_child_count(),
 		"owner": owner_id,
 		"garrison": garrison,
 		"max_garrison": max_garrison,
 		"connected_to": []
-	})
+	}
+	if not unit_type.is_empty():
+		data["unit_type"] = unit_type
+	tower.setup_from_data(data)
 	return tower
 
 
@@ -120,6 +141,12 @@ func _expect_equal(label: String, actual: float, expected: float) -> void:
 	if not is_equal_approx(actual, expected):
 		_failures += 1
 		push_error("%s: expected %s, got %s" % [label, expected, actual])
+
+
+func _expect_true(label: String, value: bool) -> void:
+	if not value:
+		_failures += 1
+		push_error("Expectation failed: %s" % label)
 
 
 func _generation_rate() -> float:
